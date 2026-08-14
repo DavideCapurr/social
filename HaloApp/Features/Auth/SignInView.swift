@@ -42,7 +42,7 @@ struct SignInView: View {
           handleApple(result)
         }
       )
-      .signInWithAppleButtonStyle(.white)
+      .signInWithAppleButtonStyle(.black)
       .frame(height: 52)
 
       Button {
