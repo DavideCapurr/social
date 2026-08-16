@@ -262,8 +262,14 @@ private struct StatoGrid: View {
     } else {
       LazyVGrid(columns: columns, spacing: 10) {
         ForEach(clusters) { cluster in
-          StatoCard(cluster: cluster)
-            .onTapGesture { onTapCluster(cluster) }
+          Button {
+            onTapCluster(cluster)
+          } label: {
+            StatoCard(cluster: cluster)
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("\(cluster.label), \(cluster.people.count) persone")
+          .accessibilityHint("Apre il dettaglio del gruppo")
         }
       }
       .padding(.horizontal, 22)
@@ -300,7 +306,8 @@ private struct StatoCard: View {
     let latest = cluster.people.map { StatoView.minutesSince($0.lastPostAt) }.min() ?? .infinity
     guard latest.isFinite,
           let dateMin = cluster.people.compactMap(\.lastPostAt).max() else { return "" }
-    return "· ultimo \(StatoTime.ago(from: dateMin)) fa"
+    let ago = StatoTime.ago(from: dateMin)
+    return ago == "adesso" ? ago : "\(ago) fa"
   }
 
   var body: some View {
@@ -309,27 +316,27 @@ private struct StatoCard: View {
     let extraCount = max(cluster.people.count - 5, 0)
 
     return VStack(alignment: .leading, spacing: 0) {
-      // header: label + count
-      HStack(alignment: .top) {
-        VStack(alignment: .leading, spacing: 5) {
-          Text(cluster.label)
-            .font(HaloType.serif(22, weight: .regular))
-            .foregroundStyle(HaloVisual.Palette.cream)
-            .kerning(-0.11)
-            .lineLimit(1)
+      // header: label, freshness and open affordance
+      VStack(alignment: .leading, spacing: 6) {
+        Text(cluster.label)
+          .font(HaloType.serif(22, weight: .regular))
+          .foregroundStyle(HaloVisual.Palette.cream)
+          .kerning(-0.11)
+          .lineLimit(1)
+          .minimumScaleFactor(0.78)
+          .layoutPriority(1)
 
+        HStack(alignment: .center, spacing: 8) {
           Text(recentAgo.isEmpty ? " " : recentAgo)
             .font(HaloType.mono(9, weight: .regular))
             .kerning(0.54)
             .foregroundStyle(HaloVisual.Palette.creamMute)
+            .lineLimit(1)
+
+          Spacer(minLength: 4)
+
+          countBadge
         }
-
-        Spacer(minLength: 4)
-
-        Text(String(format: "%02d", cluster.people.count))
-          .font(HaloType.mono(11, weight: .medium))
-          .kerning(0.44)
-          .foregroundStyle(HaloVisual.Palette.cream)
       }
 
       // stacked portraits
@@ -369,10 +376,25 @@ private struct StatoCard: View {
     .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
     .haloGlass(
       in: shape,
-      tint: moodColor.opacity(0.18),
-      stroke: moodColor.opacity(0.32)
+      tint: moodColor.opacity(0.22),
+      stroke: moodColor.opacity(0.42)
     )
     .contentShape(shape)
+  }
+
+  private var countBadge: some View {
+    HStack(spacing: 6) {
+      Text(String(format: "%02d", cluster.people.count))
+        .font(HaloType.mono(11, weight: .medium))
+        .kerning(0.44)
+      Image(systemName: "chevron.right")
+        .font(HaloType.system(10, weight: .semibold))
+    }
+    .foregroundStyle(HaloVisual.Palette.cream)
+    .padding(.horizontal, 8)
+    .padding(.vertical, 6)
+    .background(HaloVisual.Palette.creamWhisper, in: Capsule())
+    .overlay(Capsule().strokeBorder(HaloVisual.Palette.creamHair, lineWidth: 0.5))
   }
 }
 
@@ -419,12 +441,12 @@ private struct StatoSilenziosi: View {
       VStack(alignment: .leading, spacing: 12) {
         HStack(spacing: 8) {
           Text("silenziosi")
-            .haloEyebrow(HaloVisual.Palette.creamLow, size: 9, tracking: 2.6)
+            .haloEyebrow(HaloVisual.Palette.cream, size: 9, tracking: 2.6)
 
           Text("· \(String(format: "%02d", people.count))")
             .font(HaloType.mono(9, weight: .regular))
             .kerning(0.54)
-            .foregroundStyle(HaloVisual.Palette.creamMute)
+            .foregroundStyle(HaloVisual.Palette.creamLow)
 
           Rectangle()
             .fill(HaloVisual.Palette.creamLine)
@@ -437,22 +459,26 @@ private struct StatoSilenziosi: View {
             Button(action: { onTapPerson(person) }) {
               HStack(spacing: 8) {
                 Circle()
-                  .fill(HaloVisual.Palette.creamWhisper)
-                  .frame(width: 22, height: 22)
+                  .fill(HaloVisual.Palette.nightSurface)
+                  .frame(width: 24, height: 24)
                   .overlay(Circle().strokeBorder(HaloVisual.Palette.creamHair, lineWidth: 0.5))
                   .overlay(
                     Text(String(person.name.prefix(1)))
                       .font(HaloType.serif(11, weight: .regular))
-                      .foregroundStyle(HaloVisual.Palette.creamLow)
+                      .foregroundStyle(HaloVisual.Palette.cream)
                   )
 
                 Text(person.name)
                   .font(HaloType.serif(14, weight: .regular))
                   .foregroundStyle(HaloVisual.Palette.creamLow)
               }
-              .opacity(0.55)
+              .padding(.horizontal, 10)
+              .padding(.vertical, 8)
+              .background(HaloVisual.Palette.creamWhisper, in: Capsule())
+              .overlay(Capsule().strokeBorder(HaloVisual.Palette.creamHair, lineWidth: 0.5))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("\(person.name), silenzioso")
           }
         }
       }
