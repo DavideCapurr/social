@@ -308,11 +308,16 @@ struct SwarmCommandButton: View {
         Text(label)
           .font(HaloType.ui(13, weight: .semibold))
       }
-      .foregroundStyle(isProminent ? SwarmHalo.background : SwarmHalo.ink)
+      .foregroundStyle(SwarmHalo.ink)
       .padding(.horizontal, SwarmHalo.s4)
       .padding(.vertical, 10)
-      .background(isProminent ? activation.color : activation.fill, in: Capsule())
-      .overlay(Capsule().strokeBorder(isProminent ? activation.color.opacity(0.92) : activation.stroke, lineWidth: SwarmStroke.standard))
+      .background(isProminent ? activation.color.opacity(0.13) : Color.clear, in: Capsule())
+      .haloGlass(
+        in: Capsule(),
+        tint: isProminent ? activation.color.opacity(0.24) : nil,
+        interactive: true,
+        stroke: isProminent ? activation.color.opacity(0.62) : activation.stroke
+      )
       .shadow(color: isProminent ? activation.glow : .clear, radius: 10, y: 4)
     }
     .buttonStyle(.plain)
