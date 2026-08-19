@@ -182,8 +182,13 @@ extension View {
   func swarmIconFrame(active: Bool = false, activation: SwarmActivationRole = .rest) -> some View {
     self
       .frame(width: 36, height: 36)
-      .background(active ? activation.fill : SwarmHalo.inkWhisper, in: Circle())
-      .overlay(Circle().strokeBorder(active ? activation.stroke : SwarmHalo.inkLine, lineWidth: SwarmStroke.hairline))
+      .background(active ? activation.color.opacity(0.10) : Color.clear, in: Circle())
+      .haloGlass(
+        in: Circle(),
+        tint: active ? activation.color.opacity(0.20) : nil,
+        interactive: true,
+        stroke: active ? activation.stroke : SwarmHalo.inkLine
+      )
       .shadow(color: active ? activation.glow : .clear, radius: 8)
   }
 
