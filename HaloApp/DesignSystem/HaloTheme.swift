@@ -175,8 +175,13 @@ extension View {
     self
       .padding(.horizontal, SwarmHalo.s3)
       .padding(.vertical, SwarmHalo.s2)
-      .background(active ? activation.fill : SwarmSurfaceRole.chip.fill, in: Capsule())
-      .overlay(Capsule().strokeBorder(active ? activation.stroke : SwarmSurfaceRole.chip.stroke, lineWidth: SwarmStroke.hairline))
+      .background(active ? activation.color.opacity(0.10) : Color.clear, in: Capsule())
+      .haloGlass(
+        in: Capsule(),
+        tint: active ? activation.color.opacity(0.18) : nil,
+        stroke: active ? activation.stroke : SwarmSurfaceRole.chip.stroke
+      )
+      .shadow(color: active ? activation.glow : .clear, radius: 6, y: 2)
   }
 
   func swarmIconFrame(active: Bool = false, activation: SwarmActivationRole = .rest) -> some View {
