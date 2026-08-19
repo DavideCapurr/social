@@ -150,13 +150,9 @@ struct VibeFirstComposeView: View {
       }
     }
     .padding(.vertical, 12)
-    .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.5)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair
     )
   }
 
@@ -171,13 +167,10 @@ struct VibeFirstComposeView: View {
     }
     .padding(16)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair,
+      lineWidth: 0.6
     )
   }
 

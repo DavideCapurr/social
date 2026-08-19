@@ -230,13 +230,10 @@ private struct HaloSpacePage: View {
       ledgerCell("Moment", isLoading ? "--" : String(format: "%02d", posts.count))
     }
     .padding(.vertical, 12)
-    .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
+    .haloContentGlass(
+      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
+      stroke: HaloInk.creamHair,
+      lineWidth: 0.6
     )
   }
 

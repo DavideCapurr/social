@@ -212,17 +212,18 @@ extension View {
   @ViewBuilder
   func haloContentGlass<S: InsettableShape>(
     in shape: S,
-    stroke: Color = HaloTheme.glassStrokeSoft
+    stroke: Color = HaloTheme.glassStrokeSoft,
+    lineWidth: CGFloat = 0.5
   ) -> some View {
     if #available(iOS 26.0, *) {
       self
         .background(HaloVisual.Chrome.contentFill, in: shape)
         .glassEffect(.regular.tint(HaloVisual.Chrome.contentFill), in: shape)
-        .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+        .overlay(shape.strokeBorder(stroke, lineWidth: lineWidth))
     } else {
       self
         .background(HaloVisual.Chrome.fallbackFill, in: shape)
-        .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
+        .overlay(shape.strokeBorder(stroke, lineWidth: lineWidth))
     }
   }
 }
