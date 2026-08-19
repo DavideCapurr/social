@@ -279,13 +279,11 @@ private struct PulseScopePicker: View {
   @Binding var selection: PulseScope
 
   var body: some View {
-    Picker("Feed", selection: $selection) {
-      ForEach(PulseScope.allCases) { scope in
-        Text(scope.title).tag(scope)
-      }
-    }
-    .pickerStyle(.segmented)
-    .tint(SwarmHalo.ink)
+    HaloSegmentedControl(
+      selection: $selection,
+      segments: PulseScope.allCases.map { HaloSegment($0, title: $0.title) },
+      accent: SwarmHalo.ink
+    )
   }
 }
 

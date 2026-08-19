@@ -36,6 +36,7 @@
 		7C8B07C526DF4EF3B712A1E2 /* TimeOfDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A64D3653A44288924B64E7 /* TimeOfDay.swift */; };
 		8410A859D05FA2D347B673ED /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 22C5F11DE43A60B63C9E5E6B /* Supabase */; };
 		876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */; };
+		A51E6D510000000000000001 /* HaloSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51E6D510000000000000002 /* HaloSegmentedControl.swift */; };
 		89A6203B06472FB1E7FA9EF0 /* BottomBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F19C3296B85B41B832FB82C /* BottomBarView.swift */; };
 		8A23A9C7C9B1F4BBB26EC6B2 /* LockscreenWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A30A8ACF8B2ED88DA4FAAD6 /* LockscreenWidget.swift */; };
 		8B1112131415161718191A1B /* CampusVerificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1112131415161718191A1C /* CampusVerificationService.swift */; };
@@ -191,6 +192,7 @@
 		D95DA4E1CEB64301BF54632F /* HaloTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTypography.swift; sourceTree = "<group>"; };
 		D609014AE9A3E198F060B9EB /* Provider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Provider.swift; sourceTree = "<group>"; };
 		E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloTheme.swift; sourceTree = "<group>"; };
+		A51E6D510000000000000002 /* HaloSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloSegmentedControl.swift; sourceTree = "<group>"; };
 		E90724064121075716CB5C3B /* HaloApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HaloApp.entitlements; sourceTree = "<group>"; };
 		E9DB056B8F2461EE256B27F1 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		ECD2AC664A6AA49C2DC6BBF5 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
@@ -406,6 +408,7 @@
 				18B9BD110A8508D7F56D943C /* Components */,
 				52E43619CFEC6A0D562321E1 /* Tokens.swift */,
 				E3836A2723C6326F6DDE66E9 /* HaloTheme.swift */,
+				A51E6D510000000000000002 /* HaloSegmentedControl.swift */,
 				D95DA4E1CEB64301BF54632F /* HaloTypography.swift */,
 				4FB6BEB670DD6A407B8C50FD /* HapticEngine.swift */,
 				9972198D8FA366FB3992106A /* MoodPalette.swift */,
@@ -679,6 +682,7 @@
 				EF19FCAA5683BB141527B606 /* HaloSpacePeekSheet.swift in Sources */,
 				B7C566F8A16F0BFD746AF3D5 /* HaloSpaceView.swift in Sources */,
 				876C025F38DF4A57F0B87B38 /* HaloTheme.swift in Sources */,
+				A51E6D510000000000000001 /* HaloSegmentedControl.swift in Sources */,
 				9C68B1E83E064CBDA58186C8 /* HaloTypography.swift in Sources */,
 				9AA4F6FE6516D2B6950EAF96 /* HapticEngine.swift in Sources */,
 				999FE1CA7388965CEA2C0B88 /* HomeView.swift in Sources */,

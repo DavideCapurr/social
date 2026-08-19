@@ -85,13 +85,11 @@ struct ClubRingView: View {
   }
 
   private var kindPicker: some View {
-    Picker("kind", selection: $selectedKind) {
-      ForEach(allowedKinds) { kind in
-        Text(kind.label).tag(kind)
-      }
-    }
-    .pickerStyle(.segmented)
-    .tint(role.color)
+    HaloSegmentedControl(
+      selection: $selectedKind,
+      segments: allowedKinds.map { HaloSegment($0, title: $0.label) },
+      accent: role.color
+    )
   }
 
   @ViewBuilder

@@ -96,13 +96,11 @@ struct MemoryArchiveView: View {
         activation: .rest
       )
     } else {
-      Picker("memory", selection: $filter) {
-        ForEach(MemoryFilter.allCases) { filter in
-          Text(filter.label).tag(filter)
-        }
-      }
-      .pickerStyle(.segmented)
-      .tint(SwarmActivationRole.attention.color)
+      HaloSegmentedControl(
+        selection: $filter,
+        segments: MemoryFilter.allCases.map { HaloSegment($0, title: $0.label) },
+        accent: SwarmActivationRole.attention.color
+      )
 
       LazyVStack(spacing: SwarmHalo.s3) {
         ForEach(filteredPosts) { post in
