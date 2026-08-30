@@ -199,17 +199,18 @@ struct VibeFirstComposeView: View {
   private var moodStep: some View {
     VStack(alignment: .leading, spacing: 12) {
       stepHeading(eyebrow: "STEP 1 · MOOD", title: "che colore hai oggi?")
-      // Preview hero
       heroPreview
-      ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: 8) {
-          ForEach(Mood.allCases, id: \.self) { m in
-            moodChip(m)
-          }
+
+      LazyVGrid(columns: moodGridColumns, alignment: .leading, spacing: 8) {
+        ForEach(Mood.allCases, id: \.self) { m in
+          moodChip(m)
         }
-        .padding(.horizontal, 2)
       }
     }
+  }
+
+  private var moodGridColumns: [GridItem] {
+    [GridItem(.adaptive(minimum: 104), spacing: 8)]
   }
 
   private var heroPreview: some View {
@@ -224,18 +225,18 @@ struct VibeFirstComposeView: View {
               center: .center, startRadius: 0, endRadius: 110
             )
           )
-          .frame(width: 220, height: 220)
+          .frame(width: 188, height: 188)
           .blur(radius: 4)
           .scaleEffect(1.0 + 0.05 * phase)
       }
       Circle()
         .fill(MoodPalette.auraColor(mood, l: 0.78))
-        .frame(width: 130, height: 130)
+        .frame(width: 112, height: 112)
         .shadow(color: MoodPalette.auraRing(mood, alpha: 0.5), radius: 25)
-      PortraitView(personId: "self|hero", size: 122)
+      PortraitView(personId: "self|hero", size: 106)
         .background(HaloTheme.portraitBacking, in: Circle())
     }
-    .frame(width: 220, height: 220)
+    .frame(width: 188, height: 188)
     .frame(maxWidth: .infinity)
   }
 
@@ -253,8 +254,12 @@ struct VibeFirstComposeView: View {
         Text(m.rawValue)
           .font(HaloType.ui(14, weight: on ? .semibold : .medium))
           .foregroundStyle(on ? HaloInk.cream : HaloInk.creamLow)
+          .lineLimit(1)
+          .minimumScaleFactor(0.84)
+        Spacer(minLength: 0)
       }
-      .padding(.horizontal, 16).padding(.vertical, 9)
+      .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+      .padding(.horizontal, 12)
       .haloGlass(in: Capsule(), tint: on ? MoodPalette.auraColor(m, l: 0.55) : nil, interactive: true)
     }
     .buttonStyle(.plain)
@@ -282,12 +287,22 @@ struct VibeFirstComposeView: View {
       .padding(.horizontal, 14).padding(.vertical, 12)
       .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
 
-      Button { note = ""; advance() } label: {
-        Text("salta")
-          .font(HaloType.ui(14, weight: .medium))
-          .foregroundStyle(HaloInk.creamMute)
+      HStack {
+        Spacer()
+        Button {
+          note = ""
+          advance()
+        } label: {
+          Label("salta nota", systemImage: "forward.end")
+            .font(HaloType.ui(13, weight: .semibold))
+            .foregroundStyle(HaloInk.creamLow)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(SwarmHalo.inkWhisper, in: Capsule())
+            .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
       }
-      .buttonStyle(.plain)
     }
   }
 
@@ -541,9 +556,13 @@ struct VibeFirstComposeView: View {
     HStack {
       if step != .mood {
         Button { back() } label: {
-          Text("indietro")
-            .font(HaloType.ui(14, weight: .medium))
+          Label("indietro", systemImage: "chevron.left")
+            .font(HaloType.ui(13, weight: .semibold))
             .foregroundStyle(HaloInk.creamMute)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(SwarmHalo.inkWhisper, in: Capsule())
+            .overlay(Capsule().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
       }
@@ -552,7 +571,7 @@ struct VibeFirstComposeView: View {
         guard footerEnabled else { return }
         if step == .tier { send() } else { advance() }
       } label: {
-        Text(footerTitle)
+        Label(footerTitle, systemImage: footerIcon)
           .font(HaloType.ui(15, weight: .semibold))
           .foregroundStyle(MoodPalette.onAccent(mood, l: 0.78))
           .padding(.horizontal, 22).padding(.vertical, 12)
@@ -614,6 +633,12 @@ struct VibeFirstComposeView: View {
     if step == .tier { return "manda" }
     if step == .momento, isLoadingPhoto { return "carico..." }
     return "avanti"
+  }
+
+  private var footerIcon: String {
+    if step == .tier { return "paperplane.fill" }
+    if step == .momento, isLoadingPhoto { return "hourglass" }
+    return "chevron.right"
   }
 
   private var selectedMomentIsReady: Bool {
