@@ -10,6 +10,8 @@
 	<array>
 		<string>group.app.halo.shared</string>
 	</array>
+	<key>aps-environment</key>
+	<string>development</string>
 	<!-- Universal links per il QR dell'orientation week. Sostituire `halo.app`
 	     con il dominio reale della landing e servire l'AASA da
 	     web/landing/.well-known/apple-app-site-association. -->
