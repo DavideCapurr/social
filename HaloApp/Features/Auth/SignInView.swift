@@ -22,7 +22,7 @@ struct SignInView: View {
       }
 
       if isWorking {
-        SwarmLoadingState(label: "auth")
+        SwarmLoadingState(label: "accesso")
           .padding(.horizontal, SwarmHalo.s6)
       }
     }
@@ -48,10 +48,17 @@ struct SignInView: View {
       Button {
         showEmail.toggle()
       } label: {
-        Text(showEmail ? "nascondi email" : "entra con email")
-          .foregroundStyle(HaloInk.creamMute)
-          .font(HaloType.ui(14, weight: .medium))
-          .swarmChip()
+        HStack(spacing: 8) {
+          Image(systemName: showEmail ? "chevron.up" : "envelope.fill")
+            .font(HaloType.system(12, weight: .semibold))
+          Text(showEmail ? "nascondi email" : "email e password")
+            .font(HaloType.ui(14, weight: .medium))
+        }
+        .foregroundStyle(HaloInk.cream)
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: HaloVisual.Auth.controlMinHeight)
+        .background(SwarmHalo.inkWhisper, in: Capsule())
+        .overlay(Capsule().strokeBorder(SwarmHalo.strokeSoft, lineWidth: SwarmStroke.standard))
       }
       .buttonStyle(.plain)
 
@@ -71,38 +78,54 @@ struct SignInView: View {
 
   @ViewBuilder
   private var emailBlock: some View {
-    VStack(spacing: 10) {
-      TextField("la tua email", text: $email)
-        .textFieldStyle(.plain)
-        .font(HaloType.ui(15, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
-        .keyboardType(.emailAddress)
-        .textContentType(.emailAddress)
-        .textInputAutocapitalization(.never)
-        .autocorrectionDisabled()
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
+    let disabled = !canSubmitEmail || isWorking
+    VStack(alignment: .leading, spacing: HaloVisual.Auth.formSpacing) {
+      HaloAuthField(label: "email", hint: "usa l'email del tuo account Halo") {
+        TextField("nome@email.com", text: $email)
+          .textFieldStyle(.plain)
+          .font(HaloType.ui(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .keyboardType(.emailAddress)
+          .textContentType(.emailAddress)
+          .textInputAutocapitalization(.never)
+          .autocorrectionDisabled()
+      }
 
-      SecureField("password", text: $password)
-        .textFieldStyle(.plain)
-        .font(HaloType.ui(15, weight: .regular))
-        .foregroundStyle(HaloInk.cream)
-        .textContentType(.password)
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
+      HaloAuthField(label: "password", hint: "minimo 6 caratteri") {
+        SecureField("password", text: $password)
+          .textFieldStyle(.plain)
+          .font(HaloType.ui(15, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+          .textContentType(.password)
+      }
 
       Button {
         Task { await signInWithEmail() }
       } label: {
-        Text("entra")
+        Text("accedi")
           .font(HaloType.ui(15, weight: .semibold))
-          .foregroundStyle(HaloInk.cream)
+          .foregroundStyle(disabled ? HaloInk.creamMute : SwarmHalo.absoluteBlack)
           .frame(maxWidth: .infinity)
-          .padding(.vertical, 12)
-          .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .connected)
+          .frame(minHeight: HaloVisual.Auth.controlMinHeight)
+          .background(
+            disabled ? SwarmHalo.inkWhisper : SwarmActivationRole.connected.color,
+            in: RoundedRectangle(cornerRadius: HaloVisual.Auth.buttonRadius, style: .continuous)
+          )
+          .overlay(
+            RoundedRectangle(cornerRadius: HaloVisual.Auth.buttonRadius, style: .continuous)
+              .strokeBorder(disabled ? SwarmHalo.inkLine : SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.standard)
+          )
       }
       .buttonStyle(.plain)
+      .disabled(disabled)
     }
+    .padding(12)
+    .swarmSurface(.panel, in: RoundedRectangle(cornerRadius: HaloVisual.Auth.panelRadius, style: .continuous), activation: .connected)
+  }
+
+  private var canSubmitEmail: Bool {
+    !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+      !password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
   // MARK: - actions
@@ -110,7 +133,8 @@ struct SignInView: View {
   private func handleApple(_ result: Result<ASAuthorization, Error>) {
     switch result {
     case .failure(let e):
-      errorMessage = e.localizedDescription
+      let description = e.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+      errorMessage = description.isEmpty ? "Accesso Apple annullato o non riuscito." : description
     case .success(let auth):
       isWorking = true
       let nonce = appleNonce
@@ -127,9 +151,16 @@ struct SignInView: View {
   }
 
   private func signInWithEmail() async {
+    guard canSubmitEmail else {
+      errorMessage = "Inserisci email e password per continuare."
+      return
+    }
     isWorking = true; defer { isWorking = false }
     do {
-      let profile = try await AuthService.shared.signInWithEmail(email: email, password: password)
+      let profile = try await AuthService.shared.signInWithEmail(
+        email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+        password: password
+      )
       onSignedIn(profile)
       errorMessage = nil
     } catch {

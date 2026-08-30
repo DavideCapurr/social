@@ -10,6 +10,7 @@ import HaloShared
 /// Non ha alcun effetto sulle build di produzione (variabile assente → `false`).
 enum DemoMode {
   static let isActive: Bool = ProcessInfo.processInfo.environment["HALO_DEMO"] == "1"
+  static let phaseOverride: String? = ProcessInfo.processInfo.environment["HALO_DEMO_PHASE"]
 }
 
 @Observable
@@ -53,12 +54,19 @@ final class AppState {
   func restore() async {
     launchErrorMessage = nil
     if DemoMode.isActive {
-      currentProfile = Profile(
-        id: UUID(),
-        handle: "you",
-        displayName: "Tu"
-      )
-      phase = .ready
+      currentProfile = Self.demoProfile
+      switch DemoMode.phaseOverride {
+      case "signedOut":
+        currentProfile = nil
+        phase = .signedOut
+      case "onboarding":
+        currentProfile = Profile(id: Self.demoProfile.id, handle: "halo_demo", displayName: "Halo")
+        phase = .onboarding
+      case "initialCircle":
+        phase = .initialCircle
+      default:
+        phase = .ready
+      }
       return
     }
     if AuthService.shared.currentUserId() != nil {
@@ -180,4 +188,10 @@ final class AppState {
   private func initialCircleSkipKey(for profileId: UUID) -> String {
     "\(initialCircleSkipPrefix)\(profileId.uuidString.lowercased())"
   }
+
+  private static let demoProfile = Profile(
+    id: UUID(uuidString: "00000000-0000-4000-8000-000000000101") ?? UUID(),
+    handle: "you",
+    displayName: "Tu"
+  )
 }

@@ -31,7 +31,7 @@ struct WelcomeManifestoView<Actions: View>: View {
         .lineLimit(1)
         .minimumScaleFactor(0.8)
 
-      Text("Your people, not your audience.")
+      Text("Le tue persone, non il tuo pubblico.")
         .font(HaloType.serif(36, weight: .regular))
         .foregroundStyle(SwarmHalo.ink)
         .fixedSize(horizontal: false, vertical: true)
@@ -44,14 +44,14 @@ struct WelcomeManifestoView<Actions: View>: View {
 
   private var ledger: some View {
     HStack(spacing: 0) {
-      SwarmMetricTile(label: "likes", value: "00", activation: .rest, active: false)
+      SwarmMetricTile(label: "pubblico", value: "00", activation: .rest, active: false)
       Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
       SwarmMetricTile(label: "inner", value: "05", activation: .connected, active: true)
       Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
       SwarmMetricTile(label: "feed", value: "NO", activation: .attention, active: true)
     }
     .padding(.vertical, SwarmHalo.s3)
-    .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .connected)
+    .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: HaloVisual.Auth.panelRadius, style: .continuous), activation: .connected)
   }
 }
 

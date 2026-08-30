@@ -245,6 +245,37 @@ extension Color {
 
 // MARK: - Reusable SWARM components
 
+struct HaloAuthField<Content: View>: View {
+  let label: String
+  let hint: String
+  @ViewBuilder var content: () -> Content
+
+  init(
+    label: String,
+    hint: String,
+    @ViewBuilder content: @escaping () -> Content
+  ) {
+    self.label = label
+    self.hint = hint
+    self.content = content
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(label)
+        .haloEyebrow(HaloInk.creamMute, size: 8.5, tracking: 1.8)
+      content()
+        .font(HaloType.ui(15, weight: .regular))
+        .padding(.horizontal, HaloVisual.Auth.fieldHorizontalPadding)
+        .padding(.vertical, HaloVisual.Auth.fieldVerticalPadding)
+        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: HaloVisual.Auth.fieldRadius, style: .continuous))
+      Text(hint)
+        .font(HaloType.ui(11, weight: .regular))
+        .foregroundStyle(HaloInk.creamMute)
+    }
+  }
+}
+
 struct SwarmOperationalRail<Trailing: View>: View {
   let title: String
   let context: String

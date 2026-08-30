@@ -424,4 +424,25 @@ enum HaloVisual {
     static let dockStroke = HaloVisual.Palette.cream.opacity(0.14)
     static let dockShadow = HaloVisual.Palette.absoluteBlack.opacity(0.40)
   }
+
+  enum Auth {
+    static let horizontalPadding: CGFloat = 24
+    static let topPadding: CGFloat = 30
+    static let bottomPadding: CGFloat = 40
+    static let sectionSpacing: CGFloat = 18
+    static let formSpacing: CGFloat = 12
+
+    static let panelRadius: CGFloat = 22
+    static let fieldRadius: CGFloat = 16
+    static let buttonRadius: CGFloat = 18
+    static let chipRadius: CGFloat = 999
+
+    static let fieldHorizontalPadding: CGFloat = 16
+    static let fieldVerticalPadding: CGFloat = 13
+    static let controlMinHeight: CGFloat = 50
+
+    static let avatarSize: CGFloat = 112
+    static let avatarPortraitSize: CGFloat = 102
+    static let cameraBadgeSize: CGFloat = 34
+  }
 }

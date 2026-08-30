@@ -27,7 +27,7 @@ struct OnboardingView: View {
     ZStack {
       DeepSpaceBackground()
       ScrollView {
-        VStack(spacing: 22) {
+        VStack(spacing: HaloVisual.Auth.sectionSpacing) {
           manifesto
           avatarPicker
           handleField
@@ -40,12 +40,12 @@ struct OnboardingView: View {
           Spacer().frame(height: 12)
           ctaButton
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 30)
-        .padding(.bottom, 40)
+        .padding(.horizontal, HaloVisual.Auth.horizontalPadding)
+        .padding(.top, HaloVisual.Auth.topPadding)
+        .padding(.bottom, HaloVisual.Auth.bottomPadding)
       }
       if isWorking {
-        SwarmLoadingState(label: "save profile")
+        SwarmLoadingState(label: "salvo profilo")
           .padding(.horizontal, SwarmHalo.s6)
       }
     }
@@ -58,10 +58,10 @@ struct OnboardingView: View {
     VStack(alignment: .leading, spacing: 6) {
       Text("HALO / IDENTITY")
         .haloEyebrow(SwarmHalo.inkSecondary, size: 9, tracking: 2.2)
-      Text("come ti chiami qui dentro.")
+      Text("crea il tuo profilo.")
         .font(HaloType.serif(34, weight: .regular))
         .foregroundStyle(SwarmHalo.ink)
-      Text("handle pubblico. halo privato.")
+      Text("Scegli handle, nome e avatar. Puoi cambiarli dopo.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
     }
@@ -73,19 +73,19 @@ struct OnboardingView: View {
       ZStack {
         Circle()
           .fill(MoodPalette.auraColor(.chill, l: 0.55))
-          .frame(width: 110, height: 110)
+          .frame(width: HaloVisual.Auth.avatarSize, height: HaloVisual.Auth.avatarSize)
         if let data = avatarData, let img = UIImage(data: data) {
           Image(uiImage: img).resizable().scaledToFill()
-            .frame(width: 110, height: 110)
+            .frame(width: HaloVisual.Auth.avatarSize, height: HaloVisual.Auth.avatarSize)
             .clipShape(Circle())
         } else {
-          PortraitView(personId: handle.isEmpty ? "halo|self" : handle, size: 100)
+          PortraitView(personId: handle.isEmpty ? "halo|self" : handle, size: HaloVisual.Auth.avatarPortraitSize)
             .background(HaloTheme.portraitBacking, in: Circle())
         }
         Image(systemName: "camera.fill")
           .font(HaloType.system(12, weight: .bold))
           .foregroundStyle(SwarmHalo.background)
-          .frame(width: 32, height: 32)
+          .frame(width: HaloVisual.Auth.cameraBadgeSize, height: HaloVisual.Auth.cameraBadgeSize)
           .background(SwarmHalo.ink, in: Circle())
           .overlay(Circle().strokeBorder(SwarmHalo.background.opacity(0.4), lineWidth: 2))
           .offset(x: 38, y: 38)
@@ -102,11 +102,7 @@ struct OnboardingView: View {
   }
 
   private var handleField: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      Text("HANDLE")
-        .font(HaloType.eyebrow(10))
-        .kerning(2.0)
-        .foregroundStyle(HaloInk.creamMute)
+    HaloAuthField(label: "handle", hint: "solo lettere, numeri, punto o underscore") {
       HStack(spacing: 4) {
         Text("@").foregroundStyle(HaloInk.creamMute)
         TextField("handle", text: $handle)
@@ -118,47 +114,48 @@ struct OnboardingView: View {
             handle = String(cleaned.prefix(24))
           }
       }
-      .padding(.horizontal, 14).padding(.vertical, 12)
-      .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
     }
   }
 
   private var nameField: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      Text("DISPLAY NAME")
-        .font(HaloType.eyebrow(10))
-        .kerning(2.0)
-        .foregroundStyle(HaloInk.creamMute)
+    HaloAuthField(label: "nome visibile", hint: "il nome che vedono le tue persone") {
       TextField("come vuoi essere chiamato", text: $displayName)
         .foregroundStyle(HaloInk.cream)
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
     }
   }
 
   private var ctaButton: some View {
-    let disabled = handle.isEmpty || displayName.isEmpty
+    let disabled = !canSubmit
     return Button {
       Task { await save() }
     } label: {
       Text("inizia")
         .font(HaloType.ui(15, weight: .semibold))
-        .foregroundStyle(SwarmHalo.background)
+        .foregroundStyle(disabled ? HaloInk.creamMute : SwarmHalo.absoluteBlack)
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .background(SwarmActivationRole.connected.color, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous).strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.standard))
-        .shadow(color: SwarmActivationRole.connected.glow, radius: 12, y: 4)
+        .frame(minHeight: HaloVisual.Auth.controlMinHeight)
+        .background(disabled ? SwarmHalo.inkWhisper : SwarmActivationRole.connected.color, in: RoundedRectangle(cornerRadius: HaloVisual.Auth.buttonRadius, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: HaloVisual.Auth.buttonRadius, style: .continuous).strokeBorder(disabled ? SwarmHalo.inkLine : SwarmActivationRole.connected.stroke, lineWidth: SwarmStroke.standard))
+        .shadow(color: disabled ? .clear : SwarmActivationRole.connected.glow, radius: 12, y: 4)
     }
     .buttonStyle(.plain)
     .disabled(disabled)
-    .opacity(disabled ? 0.4 : 1)
+  }
+
+  private var canSubmit: Bool {
+    !handle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+      !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
   // MARK: - save
 
   @MainActor
   private func save() async {
+    guard canSubmit else {
+      errorMessage = "Compila handle e nome prima di continuare."
+      return
+    }
+
     isWorking = true; defer { isWorking = false }
     do {
       let normalizedHandle = handle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -169,9 +166,17 @@ struct OnboardingView: View {
         return
       }
 
+      if DemoMode.isActive {
+        var profile = initialProfile
+        profile.handle = normalizedHandle
+        profile.displayName = normalizedDisplayName
+        onDone(profile)
+        return
+      }
+
       let available = try await ProfilesService.shared.isHandleAvailable(normalizedHandle, excluding: initialProfile.id)
       guard available else {
-        errorMessage = "Questo handle e gia preso."
+        errorMessage = "Questo handle è già preso."
         return
       }
 
