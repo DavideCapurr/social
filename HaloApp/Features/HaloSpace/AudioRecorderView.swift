@@ -16,6 +16,7 @@ struct AudioRecorderView: View {
   @State private var player: AVAudioPlayer?
   @State private var meterTimer: Timer?
   @State private var fileURL: URL?
+  @State private var errorMessage: String?
 
   enum Phase { case idle, recording, recorded, playing }
 
@@ -23,14 +24,17 @@ struct AudioRecorderView: View {
 
   var body: some View {
     VStack(spacing: 18) {
-      Text(headerText)
-        .font(HaloType.eyebrow(11))
-        .kerning(2.4)
-        .textCase(.uppercase)
-        .foregroundStyle(HaloInk.creamMute)
+      VStack(spacing: 5) {
+        Text(headerText)
+          .font(HaloType.eyebrow(11))
+          .kerning(2.4)
+          .textCase(.uppercase)
+          .foregroundStyle(HaloInk.creamMute)
+        statusLine
+      }
 
       waveform
-        .frame(height: 70)
+        .frame(height: HaloVisual.AudioRecorder.waveformHeight)
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 18)
 
@@ -41,8 +45,16 @@ struct AudioRecorderView: View {
       controls
     }
     .padding(.vertical, 22)
+    .padding(.horizontal, 14)
     .frame(maxWidth: .infinity)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .background(
+      HaloVisual.AudioRecorder.surfaceFill,
+      in: RoundedRectangle(cornerRadius: HaloVisual.AudioRecorder.panelRadius, style: .continuous)
+    )
+    .overlay(
+      RoundedRectangle(cornerRadius: HaloVisual.AudioRecorder.panelRadius, style: .continuous)
+        .strokeBorder(HaloVisual.AudioRecorder.stroke, lineWidth: 0.6)
+    )
     .onDisappear { cleanup() }
   }
 
@@ -50,10 +62,42 @@ struct AudioRecorderView: View {
 
   private var headerText: String {
     switch phase {
-    case .idle: return "premi per registrare · max 60s"
+    case .idle: return "audio · max 60s"
     case .recording: return "in registrazione"
-    case .recorded: return "pronto"
+    case .recorded: return "audio pronto"
     case .playing: return "playback"
+    }
+  }
+
+  private var statusText: String {
+    switch phase {
+    case .idle: return "tocca il microfono e parla."
+    case .recording: return "tocca stop quando hai finito."
+    case .recorded: return "riascolta, rifai o conferma."
+    case .playing: return "stai ascoltando la registrazione."
+    }
+  }
+
+  @ViewBuilder
+  private var statusLine: some View {
+    if let errorMessage {
+      HStack(spacing: 6) {
+        Image(systemName: "exclamationmark.triangle.fill")
+          .font(HaloType.system(11, weight: .semibold))
+        Text(errorMessage)
+          .font(HaloType.ui(12, weight: .medium))
+          .lineLimit(2)
+          .minimumScaleFactor(0.78)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .foregroundStyle(SwarmHalo.attention)
+      .multilineTextAlignment(.center)
+      .frame(maxWidth: .infinity)
+    } else {
+      Text(statusText)
+        .font(HaloType.ui(12, weight: .regular))
+        .foregroundStyle(HaloInk.creamLow)
+        .multilineTextAlignment(.center)
     }
   }
 
@@ -88,43 +132,105 @@ struct AudioRecorderView: View {
     HStack(spacing: 24) {
       switch phase {
       case .idle:
-        circleButton(icon: "mic.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.12)) { startRecording() }
+        circleButton(
+          icon: "mic.fill",
+          accessibilityLabel: "Registra audio",
+          color: SwarmHalo.ink,
+          bg: SwarmHalo.ink.opacity(0.12)
+        ) { startRecording() }
       case .recording:
-        circleButton(icon: "stop.fill", color: SwarmHalo.background, bg: SwarmHalo.attention.opacity(0.85)) { stopRecording() }
+        circleButton(
+          icon: "stop.fill",
+          accessibilityLabel: "Ferma registrazione",
+          color: SwarmHalo.background,
+          bg: SwarmHalo.attention.opacity(0.85)
+        ) { stopRecording() }
       case .recorded:
         Button("ripeti") { reset() }
           .buttonStyle(.plain)
           .font(HaloType.ui(14, weight: .medium))
           .foregroundStyle(HaloInk.creamMute)
-        circleButton(icon: "play.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.18)) { play() }
+        circleButton(
+          icon: "play.fill",
+          accessibilityLabel: "Ascolta audio",
+          color: SwarmHalo.ink,
+          bg: SwarmHalo.ink.opacity(0.18)
+        ) { play() }
         Button("conferma") { confirm() }
           .buttonStyle(.plain)
           .font(HaloType.ui(14, weight: .semibold))
           .foregroundStyle(HaloInk.cream)
       case .playing:
-        circleButton(icon: "pause.fill", color: SwarmHalo.ink, bg: SwarmHalo.ink.opacity(0.18)) { stopPlayback() }
+        circleButton(
+          icon: "pause.fill",
+          accessibilityLabel: "Ferma playback",
+          color: SwarmHalo.ink,
+          bg: SwarmHalo.ink.opacity(0.18)
+        ) { stopPlayback() }
       }
     }
   }
 
-  private func circleButton(icon: String, color: Color, bg: Color, action: @escaping () -> Void) -> some View {
+  private func circleButton(
+    icon: String,
+    accessibilityLabel: String,
+    color: Color,
+    bg: Color,
+    action: @escaping () -> Void
+  ) -> some View {
     Button(action: action) {
       Image(systemName: icon)
-        .font(HaloType.system(22, weight: .bold))
+        .font(HaloType.system(HaloVisual.AudioRecorder.iconSize, weight: .bold))
         .foregroundStyle(color)
-        .frame(width: 64, height: 64)
-        .haloGlass(in: Circle(), tint: bg, interactive: true)
+        .frame(width: HaloVisual.AudioRecorder.controlSize, height: HaloVisual.AudioRecorder.controlSize)
+        .background(HaloVisual.AudioRecorder.controlFill, in: Circle())
+        .overlay(Circle().strokeBorder(bg, lineWidth: 1.1))
+        .shadow(color: bg.opacity(0.55), radius: 10, y: 4)
     }
     .buttonStyle(.plain)
+    .accessibilityLabel(accessibilityLabel)
   }
 
   // MARK: - record
 
+  @MainActor
   private func startRecording() {
+    errorMessage = nil
+    if #available(iOS 17.0, *) {
+      switch AVAudioApplication.shared.recordPermission {
+      case .denied:
+        errorMessage = "Microfono bloccato. Apri Impostazioni."
+      case .undetermined:
+        AVAudioApplication.requestRecordPermission { granted in
+          handlePermissionResponse(granted)
+        }
+      case .granted:
+        startRecordingAfterPermission()
+      @unknown default:
+        errorMessage = "Non riesco a leggere il permesso del microfono."
+      }
+    } else {
+      startRecordingAfterPermission()
+    }
+  }
+
+  private func handlePermissionResponse(_ granted: Bool) {
+    Task { @MainActor in
+      if granted {
+        startRecordingAfterPermission()
+      } else {
+        errorMessage = "Microfono bloccato. Apri Impostazioni."
+      }
+    }
+  }
+
+  @MainActor
+  private func startRecordingAfterPermission() {
     do {
       try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
       try AVAudioSession.sharedInstance().setActive(true)
     } catch {
+      errorMessage = "Non riesco ad attivare il microfono. Riprova."
       return
     }
 
@@ -141,7 +247,11 @@ struct AudioRecorderView: View {
     do {
       recorder = try AVAudioRecorder(url: url, settings: settings)
       recorder?.isMeteringEnabled = true
-      recorder?.record(forDuration: maxDuration)
+      guard recorder?.record(forDuration: maxDuration) == true else {
+        errorMessage = "La registrazione non è partita. Riprova."
+        cleanup()
+        return
+      }
       phase = .recording
       elapsed = 0
       levels = []
@@ -149,6 +259,7 @@ struct AudioRecorderView: View {
         Task { @MainActor in tickMeter() }
       }
     } catch {
+      errorMessage = "Non riesco a salvare l'audio. Riprova."
       phase = .idle
     }
   }
@@ -179,6 +290,7 @@ struct AudioRecorderView: View {
 
   private func play() {
     guard let url = fileURL else { return }
+    errorMessage = nil
     do {
       try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
       try AVAudioSession.sharedInstance().setActive(true)
@@ -192,6 +304,7 @@ struct AudioRecorderView: View {
         if phase == .playing { phase = .recorded }
       }
     } catch {
+      errorMessage = "Non riesco a riprodurre questo audio."
       phase = .recorded
     }
   }
@@ -209,10 +322,14 @@ struct AudioRecorderView: View {
     elapsed = 0
     levels = []
     fileURL = nil
+    errorMessage = nil
   }
 
   private func confirm() {
-    guard let url = fileURL else { return }
+    guard let url = fileURL, elapsed > 0 else {
+      errorMessage = "Registra almeno un secondo di audio."
+      return
+    }
     onFinished(url, elapsed)
   }
 

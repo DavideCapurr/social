@@ -424,4 +424,17 @@ enum HaloVisual {
     static let dockStroke = HaloVisual.Palette.cream.opacity(0.14)
     static let dockShadow = HaloVisual.Palette.absoluteBlack.opacity(0.40)
   }
+
+  enum AudioRecorder {
+    static let panelRadius: CGFloat = 24
+    static let fieldRadius: CGFloat = 18
+    static let controlSize: CGFloat = 64
+    static let iconSize: CGFloat = 22
+    static let waveformHeight: CGFloat = 70
+
+    static let surfaceFill = HaloVisual.Palette.absoluteBlack
+    static let controlFill = HaloVisual.Palette.absoluteBlack
+    static let stroke = HaloVisual.Palette.creamLine
+    static let activeStroke = HaloVisual.Palette.bronze.opacity(0.58)
+  }
 }

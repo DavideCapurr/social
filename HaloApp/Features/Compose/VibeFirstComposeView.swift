@@ -441,7 +441,14 @@ struct VibeFirstComposeView: View {
       }
       .padding(.horizontal, 14)
       .padding(.vertical, 12)
-      .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+      .background(
+        HaloVisual.AudioRecorder.surfaceFill,
+        in: RoundedRectangle(cornerRadius: HaloVisual.AudioRecorder.fieldRadius, style: .continuous)
+      )
+      .overlay(
+        RoundedRectangle(cornerRadius: HaloVisual.AudioRecorder.fieldRadius, style: .continuous)
+          .strokeBorder(HaloVisual.AudioRecorder.activeStroke, lineWidth: 0.6)
+      )
     } else {
       AudioRecorderView { url, duration in
         audioFileURL = url
