@@ -33,7 +33,7 @@ struct BocconiVerifyView: View {
         .padding(.vertical, 18)
     }
     .background(haloSheetBackground())
-    .presentationDetents([.medium, .large])
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
@@ -43,9 +43,9 @@ struct BocconiVerifyView: View {
   private var topRail: some View {
     HStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 3) {
-        Text("BOCCONI / VERIFY")
+        Text("BOCCONI / VERIFICA")
           .haloEyebrow(SwarmActivationRole.connected.color, size: 8.5, tracking: 2.3)
-        Text("campus access")
+        Text("accesso campus")
           .font(HaloType.serif(24, weight: .regular))
           .foregroundStyle(HaloInk.cream)
       }
@@ -64,10 +64,10 @@ struct BocconiVerifyView: View {
 
   private var hero: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text("entra nel cold-start Bocconi.")
+      Text("sblocca il cerchio Bocconi.")
         .font(HaloType.serif(28, weight: .regular))
         .foregroundStyle(HaloInk.cream)
-      Text("serve email @studbocconi.it e founder code offline.")
+      Text("Usa la tua email Bocconi. Il codice founder è un invito privato dato dal team o da un founder già verificato.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(HaloInk.creamLow)
     }
@@ -96,7 +96,7 @@ struct BocconiVerifyView: View {
   private func verifiedState(_ verification: CampusVerification) -> some View {
     SwarmEmptyState(
       title: "Bocconi verificata.",
-      message: "\(verification.email) e dentro Halo Founder.",
+      message: "\(verification.email) è dentro Halo Founder.",
       activation: .connected
     )
   }
@@ -107,13 +107,15 @@ struct BocconiVerifyView: View {
         label: "email campus",
         placeholder: "nome.cognome@studbocconi.it",
         text: $email,
-        keyboard: .emailAddress
+        keyboard: .emailAddress,
+        hint: "solo indirizzi @studbocconi.it"
       )
       field(
-        label: "founder code",
-        placeholder: "BOCCONI-...",
+        label: "codice founder",
+        placeholder: "BOCCONI-INVITO",
         text: $founderCode,
-        keyboard: .default
+        keyboard: .default,
+        hint: "codice privato ricevuto offline"
       )
     }
   }
@@ -122,7 +124,8 @@ struct BocconiVerifyView: View {
     label: String,
     placeholder: String,
     text: Binding<String>,
-    keyboard: UIKeyboardType
+    keyboard: UIKeyboardType,
+    hint: String
   ) -> some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(label)
@@ -136,6 +139,9 @@ struct BocconiVerifyView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+      Text(hint)
+        .font(HaloType.ui(11, weight: .regular))
+        .foregroundStyle(HaloInk.creamMute)
     }
   }
 
@@ -171,10 +177,15 @@ struct BocconiVerifyView: View {
             .background(SwarmActivationRole.connected.color, in: Capsule())
         }
         .buttonStyle(.plain)
-        .disabled(isSubmitting || email.isEmpty || founderCode.isEmpty)
-        .opacity((email.isEmpty || founderCode.isEmpty) ? 0.45 : 1)
+        .disabled(isSubmitting || !canSubmit)
+        .opacity(canSubmit ? 1 : 0.45)
       }
     }
+  }
+
+  private var canSubmit: Bool {
+    !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+      !founderCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
   @MainActor
@@ -182,6 +193,17 @@ struct BocconiVerifyView: View {
     isLoading = true
     errorMessage = nil
     defer { isLoading = false }
+
+    if DemoMode.isActive {
+      verification = nil
+      if email.isEmpty {
+        email = "mario.rossi@studbocconi.it"
+      }
+      if founderCode.isEmpty {
+        founderCode = "BOCCONI-INVITO"
+      }
+      return
+    }
 
     do {
       verification = try await CampusVerificationService.shared.currentBocconiVerification()
@@ -203,6 +225,22 @@ struct BocconiVerifyView: View {
     errorMessage = nil
     defer { isSubmitting = false }
 
+    email = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    founderCode = founderCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+
+    if DemoMode.isActive {
+      guard email.hasSuffix("@studbocconi.it") else {
+        errorMessage = "Usa la tua email @studbocconi.it."
+        return
+      }
+      guard founderCode.hasPrefix("BOCCONI-") else {
+        errorMessage = "Il codice founder inizia con BOCCONI-."
+        return
+      }
+      verification = Self.demoVerification(email: email, founderCode: founderCode)
+      return
+    }
+
     do {
       verification = try await CampusVerificationService.shared.verifyBocconi(
         email: email,
@@ -214,6 +252,22 @@ struct BocconiVerifyView: View {
         fallback: "Email o founder code non validi."
       )
     }
+  }
+
+  private static func demoVerification(email: String, founderCode: String) -> CampusVerification {
+    CampusVerification(
+      id: fixedUUID("00000000-0000-4000-8000-000000090001"),
+      userId: fixedUUID("00000000-0000-4000-8000-000000090002"),
+      campusId: fixedUUID("00000000-0000-4000-8000-000000090003"),
+      email: email,
+      founderCode: founderCode,
+      verifiedAt: .now,
+      createdAt: .now
+    )
+  }
+
+  private static func fixedUUID(_ rawValue: String) -> UUID {
+    UUID(uuidString: rawValue) ?? UUID()
   }
 }
 
