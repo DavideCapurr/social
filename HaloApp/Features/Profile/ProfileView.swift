@@ -331,7 +331,7 @@ private struct ProfileReportSheet: View {
         .padding(.vertical, 18)
     }
     .background(haloSheetBackground())
-    .presentationDetents([.medium, .large])
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
@@ -386,7 +386,7 @@ private struct ProfileReportSheet: View {
     HStack(spacing: 10) {
       Image(systemName: "magnifyingglass")
         .foregroundStyle(HaloInk.creamMute)
-      TextField("cerca @handle", text: $query)
+      TextField("cerca @handle o nome", text: $query)
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
         .foregroundStyle(HaloInk.cream)
@@ -409,15 +409,25 @@ private struct ProfileReportSheet: View {
     } else if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       SwarmEmptyState(
         title: "cerca un handle.",
-        message: "il report si apre solo su un profilo diverso dal tuo.",
-        activation: .rest
-      )
+        message: DemoMode.isActive ? "prova @gia, @fra o @mura." : "il report si apre solo su un profilo diverso dal tuo.",
+        activation: .rest,
+        actionTitle: DemoMode.isActive ? "prova @gia" : nil,
+        actionIcon: "magnifyingglass"
+      ) {
+        query = "gia"
+        Task { await search() }
+      }
     } else if results.isEmpty {
       SwarmEmptyState(
         title: "nessun profilo.",
-        message: "controlla handle o nome e riprova.",
-        activation: .rest
-      )
+        message: DemoMode.isActive ? "nei dati demo puoi cercare per nome o handle, ad esempio @fra o Giacomo." : "controlla handle o nome e riprova.",
+        activation: .rest,
+        actionTitle: DemoMode.isActive ? "cerca @fra" : nil,
+        actionIcon: "magnifyingglass"
+      ) {
+        query = "fra"
+        Task { await search() }
+      }
     } else {
       VStack(alignment: .leading, spacing: 8) {
         sectionHeader("risultati")
@@ -506,6 +516,11 @@ private struct ProfileReportSheet: View {
     errorMessage = nil
     guard !q.isEmpty else { return }
 
+    if DemoMode.isActive {
+      results = Self.demoProfiles(matching: q)
+      return
+    }
+
     isLoading = true
     defer { isLoading = false }
 
@@ -522,6 +537,36 @@ private struct ProfileReportSheet: View {
         fallback: "Non riesco a cercare profili. Riprova."
       )
     }
+  }
+
+  private static func demoProfiles(matching rawQuery: String) -> [Profile] {
+    let q = rawQuery
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+      .lowercased()
+
+    guard !q.isEmpty else { return [] }
+
+    let people = SeedPeople.all + SeedPeople.demoted + SeedPeople.asteroids
+    return people.enumerated().compactMap { index, person -> Profile? in
+      let handle = person.handle.lowercased()
+      let name = person.name.lowercased()
+      guard handle.contains(q) || name.contains(q) else { return nil }
+      return Profile(
+        id: demoProfileId(index: index),
+        handle: person.handle,
+        displayName: person.name,
+        bio: person.note.isEmpty ? nil : person.note,
+        isPublic: !person.isMutual
+      )
+    }
+    .prefix(12)
+    .map { $0 }
+  }
+
+  private static func demoProfileId(index: Int) -> UUID {
+    let suffix = String(format: "%012d", index + 1)
+    return UUID(uuidString: "00000000-0000-4000-8000-\(suffix)") ?? UUID()
   }
 }
 
