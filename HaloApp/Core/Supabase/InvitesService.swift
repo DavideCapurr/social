@@ -44,13 +44,13 @@ final class InvitesService {
       case .notAuthenticated:
         return "Sessione non valida. Esci e rientra."
       case .invalidTarget:
-        return "Questo invite non e per il tuo profilo."
+        return "Questo invito non è per il tuo profilo."
       case .expired:
-        return "Questo invite e scaduto."
+        return "Questo invito è scaduto."
       case .alreadyHandled:
-        return "Questo invite e gia stato usato."
+        return "Questo invito è già stato usato."
       case .missingLink:
-        return "Non riesco a creare il link dell'invite."
+        return "Non riesco a creare il link dell'invito."
       }
     }
   }

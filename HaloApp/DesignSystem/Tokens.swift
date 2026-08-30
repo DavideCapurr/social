@@ -424,4 +424,21 @@ enum HaloVisual {
     static let dockStroke = HaloVisual.Palette.cream.opacity(0.14)
     static let dockShadow = HaloVisual.Palette.absoluteBlack.opacity(0.40)
   }
+
+  enum SocialSheet {
+    static let horizontalPadding: CGFloat = 18
+    static let footerHorizontalPadding: CGFloat = 22
+    static let railTopPadding: CGFloat = 14
+    static let sectionSpacing: CGFloat = 14
+    static let panelRadius: CGFloat = 24
+    static let fieldRadius: CGFloat = 18
+    static let actionHeight: CGFloat = 50
+    static let closeButtonSize: CGFloat = 34
+    static let portraitSize: CGFloat = 48
+
+    static let background = HaloVisual.Palette.absoluteBlack
+    static let surfaceFill = HaloVisual.Palette.absoluteBlack
+    static let controlFill = HaloVisual.Palette.absoluteBlack
+    static let stroke = HaloVisual.Palette.creamLine
+  }
 }

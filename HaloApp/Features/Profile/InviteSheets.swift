@@ -15,12 +15,12 @@ struct InnerInviteSheet: View {
   var body: some View {
     VStack(spacing: 0) {
       topRail
-        .padding(.horizontal, 18)
-        .padding(.top, 14)
+        .padding(.horizontal, HaloVisual.SocialSheet.horizontalPadding)
+        .padding(.top, HaloVisual.SocialSheet.railTopPadding)
         .padding(.bottom, 10)
 
       ScrollView {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: HaloVisual.SocialSheet.sectionSpacing) {
           hero
           if let invite, let url = invite.deepLinkURL {
             createdState(url)
@@ -31,20 +31,20 @@ struct InnerInviteSheet: View {
             }
           }
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, HaloVisual.SocialSheet.horizontalPadding)
         .padding(.bottom, 18)
       }
       .scrollIndicators(.hidden)
 
       footer
-        .padding(.horizontal, 22)
+        .padding(.horizontal, HaloVisual.SocialSheet.footerHorizontalPadding)
         .padding(.vertical, 18)
     }
-    .background(haloSheetBackground())
-    .presentationDetents([.medium, .large])
+    .background(haloSocialSheetBackground())
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
-    .presentationBackground(.clear)
+    .presentationBackground(HaloVisual.SocialSheet.background)
   }
 
   private var topRail: some View {
@@ -61,7 +61,7 @@ struct InnerInviteSheet: View {
         Image(systemName: "xmark")
           .font(HaloType.system(12, weight: .semibold))
           .foregroundStyle(HaloInk.creamLow)
-          .frame(width: 30, height: 30)
+          .frame(width: HaloVisual.SocialSheet.closeButtonSize, height: HaloVisual.SocialSheet.closeButtonSize)
           .background(Circle().fill(SwarmHalo.inkWhisper))
           .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
       }
@@ -72,27 +72,27 @@ struct InnerInviteSheet: View {
   private var hero: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(spacing: 12) {
-        PortraitView(personId: person.id, size: 44, grayscale: true)
+        PortraitView(personId: person.id, size: HaloVisual.SocialSheet.portraitSize, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
           .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.8))
         VStack(alignment: .leading, spacing: 2) {
           Text("stai aprendo l'Inner.")
             .font(HaloType.serif(22, weight: .regular))
             .foregroundStyle(HaloInk.cream)
-          Text("@\(person.handle) ricevera un link privato.")
+          Text("@\(person.handle) riceverà un link privato.")
             .font(HaloType.ui(12, weight: .regular))
             .foregroundStyle(HaloInk.creamMute)
         }
       }
-      Text("copy: ti ho messo nel mio Inner.")
+      Text("Puoi aggiungere un messaggio. Il link scade tra 14 giorni.")
         .font(HaloType.ui(12, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
     }
     .padding(14)
-    .swarmSurface(
-      .panel,
-      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
-      activation: .connected
+    .haloSocialSurface(
+      in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.panelRadius, style: .continuous),
+      fill: HaloVisual.SocialSheet.surfaceFill,
+      stroke: SwarmActivationRole.connected.stroke
     )
   }
 
@@ -109,7 +109,7 @@ struct InnerInviteSheet: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+        .haloSocialSurface(in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous))
       Text("\(message.count)/160")
         .font(HaloType.mono(10, weight: .medium))
         .foregroundStyle(HaloInk.creamMute)
@@ -118,10 +118,32 @@ struct InnerInviteSheet: View {
 
   private func createdState(_ url: URL) -> some View {
     VStack(alignment: .leading, spacing: 12) {
-      SwarmEmptyState(
-        title: "invite pronto.",
-        message: "manda il link a @\(person.handle). scade tra 14 giorni.",
-        activation: .connected
+      VStack(spacing: 12) {
+        ZStack {
+          Circle()
+            .strokeBorder(
+              SwarmActivationRole.connected.stroke,
+              style: StrokeStyle(lineWidth: SwarmStroke.standard, dash: [3, 5])
+            )
+            .frame(width: 58, height: 58)
+          Circle()
+            .fill(SwarmActivationRole.connected.color.opacity(0.18))
+            .frame(width: 8, height: 8)
+        }
+        Text("invite pronto.")
+          .font(HaloType.serif(24, weight: .regular))
+          .foregroundStyle(HaloInk.cream)
+        Text("manda il link a @\(person.handle). Scade tra 14 giorni.")
+          .font(HaloType.ui(13, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
+          .multilineTextAlignment(.center)
+      }
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 26)
+      .padding(.horizontal, 14)
+      .haloSocialSurface(
+        in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.panelRadius, style: .continuous),
+        stroke: SwarmActivationRole.connected.stroke
       )
       Text(url.absoluteString)
         .font(HaloType.mono(11, weight: .medium))
@@ -129,7 +151,7 @@ struct InnerInviteSheet: View {
         .lineLimit(3)
         .textSelection(.enabled)
         .padding(12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+        .haloSocialSurface(in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous))
     }
   }
 
@@ -149,8 +171,12 @@ struct InnerInviteSheet: View {
             .font(HaloType.ui(15, weight: .semibold))
             .foregroundStyle(HaloInk.cream)
             .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .swarmSurface(.control, in: Capsule(), activation: .connected)
+            .frame(minHeight: HaloVisual.SocialSheet.actionHeight)
+            .haloSocialSurface(
+              in: Capsule(),
+              fill: SwarmActivationRole.connected.fill,
+              stroke: SwarmActivationRole.connected.stroke
+            )
         }
       } else {
         Button("annulla") { dismiss() }
@@ -161,11 +187,11 @@ struct InnerInviteSheet: View {
         Button {
           Task { await createInvite() }
         } label: {
-          Text(isCreating ? "creo..." : "crea invite")
+          Text(isCreating ? "creo..." : "crea invito")
             .font(HaloType.ui(15, weight: .semibold))
             .foregroundStyle(SwarmHalo.background)
             .padding(.horizontal, 22)
-            .padding(.vertical, 12)
+            .frame(minHeight: HaloVisual.SocialSheet.actionHeight)
             .background(SwarmActivationRole.connected.color, in: Capsule())
         }
         .buttonStyle(.plain)
@@ -190,18 +216,26 @@ struct InnerInviteSheet: View {
       .foregroundStyle(SwarmHalo.attention)
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
-      .swarmSurface(
-        .panel,
-        in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
-        activation: .attention
+      .haloSocialSurface(
+        in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous),
+        fill: SwarmActivationRole.attention.fill,
+        stroke: SwarmActivationRole.attention.stroke
       )
   }
 
   @MainActor
   private func createInvite() async {
     guard !isCreating else { return }
+    if DemoMode.isActive {
+      isCreating = true
+      errorMessage = nil
+      defer { isCreating = false }
+      invite = Self.demoInvite(for: person, message: message)
+      return
+    }
+
     guard let userId = UUID(uuidString: person.id) else {
-      errorMessage = "Questo profilo non puo ricevere invite."
+      errorMessage = "Questo profilo non può ricevere inviti."
       return
     }
 
@@ -215,11 +249,30 @@ struct InnerInviteSheet: View {
         message: message.isEmpty ? "ti ho messo nel mio Inner." : message
       )
     } catch {
-      errorMessage = SupabaseErrorMessage.describe(
+      errorMessage = InviteSheetErrorCopy.describe(
         error,
-        fallback: "Non riesco a creare l'invite. Riprova."
+        fallback: "Non riesco a creare l'invito. Riprova."
       )
     }
+  }
+
+  private static func demoInvite(for person: HaloPersonNode, message: String) -> HaloInvite {
+    HaloInvite(
+      id: fixedUUID("00000000-0000-4000-8000-000000080001"),
+      token: "demo-inner-\(person.handle)",
+      inviterId: fixedUUID("00000000-0000-4000-8000-000000080002"),
+      inviteeId: fixedUUID("00000000-0000-4000-8000-000000080003"),
+      tier: .inner,
+      message: message.isEmpty ? "ti ho messo nel mio Inner." : message,
+      status: "pending",
+      createdAt: .now,
+      expiresAt: Date.now.addingTimeInterval(14 * 24 * 3600),
+      acceptedAt: nil
+    )
+  }
+
+  private static func fixedUUID(_ rawValue: String) -> UUID {
+    UUID(uuidString: rawValue) ?? UUID()
   }
 }
 
@@ -238,21 +291,21 @@ struct InviteAcceptSheet: View {
   var body: some View {
     VStack(spacing: 0) {
       topRail
-        .padding(.horizontal, 18)
-        .padding(.top, 14)
+        .padding(.horizontal, HaloVisual.SocialSheet.horizontalPadding)
+        .padding(.top, HaloVisual.SocialSheet.railTopPadding)
         .padding(.bottom, 10)
 
       VStack(spacing: 14) {
         if isLoading {
-          SwarmLoadingState(label: "carico invite")
+          loadingState
         } else if didAccept {
-          SwarmEmptyState(
+          statusState(
             title: "Inner confermato.",
             message: "ora puoi chiudere questa finestra.",
             activation: .connected
           )
         } else if let errorMessage {
-          SwarmEmptyState(
+          statusState(
             title: "invite non valido.",
             message: errorMessage,
             activation: .attention
@@ -261,18 +314,18 @@ struct InviteAcceptSheet: View {
           inviteBody(invite: invite, inviter: inviter)
         }
       }
-      .padding(.horizontal, 18)
+      .padding(.horizontal, HaloVisual.SocialSheet.horizontalPadding)
       .frame(maxHeight: .infinity, alignment: .top)
 
       footer
-        .padding(.horizontal, 22)
+        .padding(.horizontal, HaloVisual.SocialSheet.footerHorizontalPadding)
         .padding(.vertical, 18)
     }
-    .background(haloSheetBackground())
-    .presentationDetents([.medium, .large])
+    .background(haloSocialSheetBackground())
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
-    .presentationBackground(.clear)
+    .presentationBackground(HaloVisual.SocialSheet.background)
     .task {
       await load()
     }
@@ -283,7 +336,7 @@ struct InviteAcceptSheet: View {
       VStack(alignment: .leading, spacing: 3) {
         Text("HALO / INVITE")
           .haloEyebrow(SwarmActivationRole.connected.color, size: 8.5, tracking: 2.3)
-        Text("inner request")
+        Text("richiesta Inner")
           .font(HaloType.serif(24, weight: .regular))
           .foregroundStyle(HaloInk.cream)
       }
@@ -292,7 +345,7 @@ struct InviteAcceptSheet: View {
         Image(systemName: "xmark")
           .font(HaloType.system(12, weight: .semibold))
           .foregroundStyle(HaloInk.creamLow)
-          .frame(width: 30, height: 30)
+          .frame(width: HaloVisual.SocialSheet.closeButtonSize, height: HaloVisual.SocialSheet.closeButtonSize)
           .background(Circle().fill(SwarmHalo.inkWhisper))
           .overlay(Circle().strokeBorder(HaloInk.creamLine, lineWidth: 0.5))
       }
@@ -322,14 +375,63 @@ struct InviteAcceptSheet: View {
           .font(HaloType.serif(17, weight: .regular))
           .foregroundStyle(HaloInk.creamLow)
           .padding(14)
-          .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+          .haloSocialSurface(in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous))
       }
     }
     .padding(14)
-    .swarmSurface(
-      .panel,
-      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous),
-      activation: .connected
+    .haloSocialSurface(
+      in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.panelRadius, style: .continuous),
+      fill: HaloVisual.SocialSheet.surfaceFill,
+      stroke: SwarmActivationRole.connected.stroke
+    )
+  }
+
+  private var loadingState: some View {
+    VStack(spacing: SwarmHalo.s3) {
+      ProgressView()
+        .tint(HaloInk.cream)
+      Text("carico invite")
+        .haloEyebrow(HaloInk.creamMute, size: 8, tracking: 1.8)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, SwarmHalo.s8)
+    .haloSocialSurface(
+      in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.panelRadius, style: .continuous)
+    )
+  }
+
+  private func statusState(
+    title: String,
+    message: String,
+    activation: SwarmActivationRole
+  ) -> some View {
+    VStack(spacing: SwarmHalo.s3) {
+      ZStack {
+        Circle()
+          .strokeBorder(
+            activation.stroke,
+            style: StrokeStyle(lineWidth: SwarmStroke.standard, dash: [3, 5])
+          )
+          .frame(width: 68, height: 68)
+        Circle()
+          .fill(activation.color.opacity(0.16))
+          .frame(width: 8, height: 8)
+      }
+      Text(title)
+        .font(HaloType.serif(24, weight: .regular))
+        .foregroundStyle(HaloInk.cream)
+      Text(message)
+        .font(HaloType.ui(13, weight: .regular))
+        .foregroundStyle(HaloInk.creamMute)
+        .multilineTextAlignment(.center)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, SwarmHalo.s8)
+    .padding(.horizontal, SwarmHalo.s4)
+    .haloSocialSurface(
+      in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.panelRadius, style: .continuous),
+      fill: activation.fill,
+      stroke: activation.stroke
     )
   }
 
@@ -348,7 +450,7 @@ struct InviteAcceptSheet: View {
             .font(HaloType.ui(15, weight: .semibold))
             .foregroundStyle(SwarmHalo.background)
             .padding(.horizontal, 22)
-            .padding(.vertical, 12)
+            .frame(minHeight: HaloVisual.SocialSheet.actionHeight)
             .background(SwarmActivationRole.connected.color, in: Capsule())
         }
         .buttonStyle(.plain)
@@ -363,17 +465,23 @@ struct InviteAcceptSheet: View {
     errorMessage = nil
     defer { isLoading = false }
 
+    if DemoMode.isActive {
+      invite = Self.demoInvite(token: token)
+      inviter = Self.demoInviter
+      return
+    }
+
     do {
       let invite = try await InvitesService.shared.invite(token: token)
       self.invite = invite
       self.inviter = try await InvitesService.shared.inviterProfile(for: invite)
       if !invite.isPending {
-        errorMessage = "Questo invite e scaduto o gia stato usato."
+        errorMessage = "Questo invito è scaduto o è già stato usato."
       }
     } catch {
-      errorMessage = SupabaseErrorMessage.describe(
+      errorMessage = InviteSheetErrorCopy.describe(
         error,
-        fallback: "Non riesco a leggere questo invite."
+        fallback: "Questo invito non è valido o non è più disponibile."
       )
     }
   }
@@ -385,14 +493,65 @@ struct InviteAcceptSheet: View {
     errorMessage = nil
     defer { isAccepting = false }
 
+    if DemoMode.isActive {
+      invite = Self.demoInvite(token: token, status: "accepted", acceptedAt: .now)
+      didAccept = true
+      return
+    }
+
     do {
       invite = try await InvitesService.shared.accept(token: token)
       didAccept = true
     } catch {
-      errorMessage = SupabaseErrorMessage.describe(
+      errorMessage = InviteSheetErrorCopy.describe(
         error,
-        fallback: "Non riesco a confermare questo invite."
+        fallback: "Non riesco a confermare questo invito. Riprova."
       )
     }
+  }
+
+  private static func demoInvite(
+    token: String,
+    status: String = "pending",
+    acceptedAt: Date? = nil
+  ) -> HaloInvite {
+    HaloInvite(
+      id: fixedUUID("00000000-0000-4000-8000-000000080101"),
+      token: token.isEmpty ? "demo-inner-you" : token,
+      inviterId: demoInviter.id,
+      inviteeId: fixedUUID("00000000-0000-4000-8000-000000080102"),
+      tier: .inner,
+      message: "ti ho messo nel mio Inner.",
+      status: status,
+      createdAt: .now,
+      expiresAt: Date.now.addingTimeInterval(14 * 24 * 3600),
+      acceptedAt: acceptedAt
+    )
+  }
+
+  private static let demoInviter = Profile(
+    id: fixedUUID("00000000-0000-4000-8000-000000080103"),
+    handle: "gia",
+    displayName: "Giacomo"
+  )
+
+  private static func fixedUUID(_ rawValue: String) -> UUID {
+    UUID(uuidString: rawValue) ?? UUID()
+  }
+}
+
+private enum InviteSheetErrorCopy {
+  static func describe(_ error: Error, fallback: String) -> String {
+    if let inviteError = error as? InvitesService.InviteError,
+       let message = inviteError.errorDescription {
+      return message
+    }
+
+    let described = SupabaseErrorMessage.describe(error, fallback: fallback)
+    if described == SupabaseErrorMessage.connectivity {
+      return described
+    }
+
+    return fallback
   }
 }

@@ -225,6 +225,37 @@ extension View {
         .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
     }
   }
+
+  func haloSocialSurface<S: InsettableShape>(
+    in shape: S,
+    fill: Color = HaloVisual.SocialSheet.surfaceFill,
+    stroke: Color = HaloVisual.SocialSheet.stroke,
+    lineWidth: CGFloat = 0.6
+  ) -> some View {
+    self
+      .background(fill, in: shape)
+      .overlay(shape.strokeBorder(stroke, lineWidth: lineWidth))
+  }
+}
+
+func haloSocialSheetBackground() -> some View {
+  UnevenRoundedRectangle(
+    cornerRadii: .init(
+      topLeading: HaloTheme.sheetCornerRadius,
+      topTrailing: HaloTheme.sheetCornerRadius
+    )
+  )
+  .fill(HaloVisual.SocialSheet.background)
+  .overlay(
+    UnevenRoundedRectangle(
+      cornerRadii: .init(
+        topLeading: HaloTheme.sheetCornerRadius,
+        topTrailing: HaloTheme.sheetCornerRadius
+      )
+    )
+    .strokeBorder(HaloVisual.SocialSheet.stroke, lineWidth: 0.6)
+  )
+  .ignoresSafeArea()
 }
 
 extension Color {

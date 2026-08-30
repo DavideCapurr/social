@@ -24,11 +24,11 @@ struct TierConfirmationSheet: View {
       actions
     }
     .padding(.bottom, 30)
-    .background(haloSheetBackground())
-    .presentationDetents([.medium])
+    .background(haloSocialSheetBackground())
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
-    .presentationBackground(.clear)
+    .presentationBackground(HaloVisual.SocialSheet.background)
   }
 
   private var header: some View {
@@ -51,7 +51,9 @@ struct TierConfirmationSheet: View {
       .font(HaloType.serif(28, weight: .regular))
       .multilineTextAlignment(.center)
     }
-    .padding(.horizontal, 22).padding(.top, 22).padding(.bottom, 8)
+    .padding(.horizontal, HaloVisual.SocialSheet.footerHorizontalPadding)
+    .padding(.top, 22)
+    .padding(.bottom, 8)
   }
 
   private var diagram: some View {
@@ -108,10 +110,11 @@ struct TierConfirmationSheet: View {
         .font(HaloType.serif(13, weight: .regular))
         .foregroundStyle(HaloInk.creamMute)
     }
-    .padding(.horizontal, 16).padding(.vertical, 14)
+    .padding(.horizontal, 16)
+    .padding(.vertical, 14)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: 16))
-    .padding(.horizontal, 22)
+    .haloSocialSurface(in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous))
+    .padding(.horizontal, HaloVisual.SocialSheet.footerHorizontalPadding)
   }
 
   private var actions: some View {
@@ -122,16 +125,21 @@ struct TierConfirmationSheet: View {
           .foregroundStyle(HaloInk.creamLow)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 14)
-          .haloGlass(in: RoundedRectangle(cornerRadius: 16), interactive: true)
+          .frame(minHeight: HaloVisual.SocialSheet.actionHeight)
+          .haloSocialSurface(
+            in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous),
+            fill: HaloVisual.SocialSheet.controlFill
+          )
       }
       .buttonStyle(.plain)
 
       Button(action: onAccept) {
         Text("invia richiesta")
           .font(HaloType.ui(15, weight: .semibold))
-          .foregroundStyle(HaloInk.cream)
+          .foregroundStyle(SwarmHalo.background)
           .frame(maxWidth: .infinity)
           .padding(.vertical, 14)
+          .frame(minHeight: HaloVisual.SocialSheet.actionHeight)
           .background(
             LinearGradient(
               colors: [
@@ -140,15 +148,19 @@ struct TierConfirmationSheet: View {
               ],
               startPoint: .top, endPoint: .bottom
             ),
-            in: RoundedRectangle(cornerRadius: 16)
+            in: RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous)
           )
           .shadow(color: MoodPalette.auraRing(proposal.person.mood, alpha: 0.5), radius: 12, y: 4)
-          .haloGlass(in: RoundedRectangle(cornerRadius: 16), tint: MoodPalette.auraColor(proposal.person.mood, l: 0.55), interactive: true)
+          .overlay(
+            RoundedRectangle(cornerRadius: HaloVisual.SocialSheet.fieldRadius, style: .continuous)
+              .strokeBorder(MoodPalette.auraColor(proposal.person.mood, l: 0.74).opacity(0.62), lineWidth: 0.6)
+          )
       }
       .buttonStyle(.plain)
       .layoutPriority(1.3)
     }
-    .padding(.horizontal, 22).padding(.top, 14)
+    .padding(.horizontal, HaloVisual.SocialSheet.footerHorizontalPadding)
+    .padding(.top, 14)
   }
 
   private var visibilityText: String {
