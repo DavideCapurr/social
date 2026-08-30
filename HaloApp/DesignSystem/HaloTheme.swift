@@ -225,6 +225,15 @@ extension View {
         .overlay(shape.strokeBorder(stroke, lineWidth: 0.5))
     }
   }
+
+  func haloBottomDockClearance(_ height: CGFloat = HaloVisual.Shell.floatingDockClearance) -> some View {
+    self.safeAreaInset(edge: .bottom, spacing: 0) {
+      Color.clear
+        .frame(height: height)
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
+    }
+  }
 }
 
 extension Color {

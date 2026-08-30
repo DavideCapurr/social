@@ -60,7 +60,7 @@ struct ProfileView: View {
         }
         .padding(.horizontal, SwarmHalo.s4)
         .padding(.top, SwarmHalo.s3)
-        .padding(.bottom, 112)
+        .padding(.bottom, HaloVisual.Shell.compactScrollTailClearance)
       }
       .scrollIndicators(.hidden)
     }

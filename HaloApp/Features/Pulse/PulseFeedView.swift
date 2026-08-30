@@ -50,8 +50,8 @@ struct PulseFeedView: View {
         onQuickDrop: addQuickDrop
       )
       .padding(.horizontal, 14)
-      .padding(.top, 30)
-      .padding(.bottom, 10)
+      .padding(.top, HaloVisual.Shell.composerScrimTopPadding)
+      .padding(.bottom, HaloVisual.Shell.composerBottomPadding)
       .background(
         LinearGradient(
           stops: [

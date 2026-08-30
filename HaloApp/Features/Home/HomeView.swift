@@ -144,10 +144,10 @@ struct HomeView: View {
           orbitTab
         case .pulse:
           PulseFeedView(onPersonTap: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+            .haloBottomDockClearance()
         case .status:
           StatoView(people: people, onTapPerson: { peek = $0 })
-            .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+            .haloBottomDockClearance()
         case .profile:
           ProfileView(
             person: me,
@@ -155,10 +155,12 @@ struct HomeView: View {
             onVibeTap: { showVibeSetter = true },
             onComposeTap: { showCompose = true }
           )
-          .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+          .haloBottomDockClearance()
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      bottomDockScrim
 
       BottomBarView(
         selfMood: me.mood,
@@ -170,7 +172,7 @@ struct HomeView: View {
         onStato: { selectTab(.status) },
         onProfile: { selectTab(.profile) }
       )
-      .padding(.bottom, 6)
+      .padding(.bottom, HaloVisual.Shell.floatingDockBottomPadding)
     }
     .preferredColorScheme(.dark)
     .animation(SwarmMotion.mount, value: selectedTab)
@@ -372,6 +374,25 @@ struct HomeView: View {
           orbitReferenceInterzoneFooter
         }
     }
+  }
+
+  private var bottomDockScrim: some View {
+    VStack {
+      Spacer(minLength: 0)
+      LinearGradient(
+        stops: [
+          .init(color: HaloVisual.Palette.absoluteBlack.opacity(0), location: 0),
+          .init(color: HaloVisual.Palette.absoluteBlack.opacity(0.82), location: 0.38),
+          .init(color: HaloVisual.Palette.absoluteBlack, location: 1),
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: HaloVisual.Shell.floatingDockScrimHeight)
+    }
+    .ignoresSafeArea(edges: .bottom)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
   }
 
   @ViewBuilder

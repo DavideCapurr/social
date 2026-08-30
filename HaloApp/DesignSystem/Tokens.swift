@@ -424,4 +424,18 @@ enum HaloVisual {
     static let dockStroke = HaloVisual.Palette.cream.opacity(0.14)
     static let dockShadow = HaloVisual.Palette.absoluteBlack.opacity(0.40)
   }
+
+  enum Shell {
+    static let floatingDockBottomPadding: CGFloat = 6
+    static let floatingDockClearance: CGFloat =
+      HaloVisual.Orbita.dockTabHeight
+      + HaloVisual.Orbita.dockVerticalPadding * 2
+      + floatingDockBottomPadding
+      + 24
+    static let floatingDockScrimHeight: CGFloat = floatingDockClearance + 92
+    static let scrollTailClearance: CGFloat = floatingDockClearance + 56
+    static let compactScrollTailClearance: CGFloat = floatingDockClearance + 24
+    static let composerScrimTopPadding: CGFloat = 30
+    static let composerBottomPadding: CGFloat = 10
+  }
 }

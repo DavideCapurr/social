@@ -79,9 +79,9 @@ struct StatoView: View {
             StatoSilenziosi(people: silent, onTapPerson: onTapPerson)
               .padding(.top, 24)
 
-            // Clearance per la tab bar fluttuante: l'ultima card della griglia
-            // mood resta interamente leggibile sopra il dock.
-            Color.clear.frame(height: 148)
+            Color.clear
+              .frame(height: HaloVisual.Shell.scrollTailClearance)
+              .accessibilityHidden(true)
           }
         }
       }
