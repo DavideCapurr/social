@@ -74,9 +74,9 @@ struct MemoryArchiveView: View {
 
   private var railContext: String {
     if isLocked {
-      return memoryCount > 0 ? "\(memoryCount) locked" : "plus"
+      return memoryCount > 0 ? "\(memoryCount) chiusi" : "plus"
     }
-    return "\(posts.count) fragments"
+    return "\(posts.count) frammenti"
   }
 
   @ViewBuilder
@@ -134,9 +134,9 @@ struct MemoryArchiveView: View {
       HStack(spacing: 0) {
         SwarmMetricTile(label: "pubblico", value: "00", activation: .rest, active: false)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-        SwarmMetricTile(label: "owner", value: twoDigits(memoryCount), activation: .attention, active: memoryCount > 0)
+        SwarmMetricTile(label: "privati", value: twoDigits(memoryCount), activation: .attention, active: memoryCount > 0)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
-        SwarmMetricTile(label: "plus", value: hasPlusHint ? "SYNC" : "LOCK", activation: .attention, active: hasPlusHint)
+        SwarmMetricTile(label: "plus", value: hasPlusHint ? "ON" : "OFF", activation: .attention, active: hasPlusHint)
       }
       .padding(.vertical, SwarmHalo.s3)
       .swarmSurface(.rail, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous))

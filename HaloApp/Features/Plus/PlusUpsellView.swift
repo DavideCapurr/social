@@ -18,39 +18,16 @@ struct PlusUpsellView: View {
           rail
           hero
           feature("Memory", "riapri i frammenti del semestre.", .connected)
-          feature("Inner archive", "tieni separato ciò che resta vicino.", .operational)
-          feature("Event recap", "persone incontrate, Moment salvati, zero pubblico.", .attention)
-          feature("Vibe+ presets", "biblioteca, loggia, aula 4 e preset salvati.", .connected)
-          feature("Halo skin", "profilo e widget con badge sottile opzionale.", .rest)
+          feature("Archivio Inner", "tieni separato ciò che resta vicino.", .operational)
+          feature("Recap eventi", "persone incontrate, Moment salvati, zero pubblico.", .attention)
+          feature("Preset vibe", "biblioteca, loggia, aula 4 e preset salvati.", .connected)
+          feature("Skin Halo", "profilo e widget con badge sottile opzionale.", .rest)
           if let errorMessage {
             Text(errorMessage)
               .font(HaloType.ui(12, weight: .regular))
               .foregroundStyle(SwarmActivationRole.attention.color)
               .frame(maxWidth: .infinity, alignment: .trailing)
           }
-          HStack(spacing: SwarmHalo.s3) {
-            SwarmCommandButton(
-              label: isWorking ? "attivazione" : "attiva Halo Plus",
-              icon: "sparkles",
-              activation: .attention,
-              isProminent: true
-            ) {
-              Task { await purchase() }
-            }
-            .disabled(isWorking || isRestoring)
-            .opacity(isWorking ? 0.62 : 1)
-
-            SwarmCommandButton(
-              label: isRestoring ? "restore" : "restore",
-              icon: "arrow.clockwise",
-              activation: .rest
-            ) {
-              Task { await restore() }
-            }
-            .disabled(isWorking || isRestoring)
-            .opacity(isRestoring ? 0.62 : 1)
-          }
-          .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, SwarmHalo.s4)
         .padding(.top, SwarmHalo.s3)
@@ -66,7 +43,7 @@ struct PlusUpsellView: View {
   }
 
   private var rail: some View {
-    SwarmOperationalRail(title: "HALO / PLUS", context: "memory surface", activation: .attention) {
+    SwarmOperationalRail(title: "HALO / PLUS", context: "memoria privata", activation: .attention) {
       Button(action: { dismiss() }) {
         Image(systemName: "xmark")
           .font(HaloType.system(12, weight: .semibold))
@@ -79,7 +56,7 @@ struct PlusUpsellView: View {
 
   private var hero: some View {
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
-      Text("i tuoi frammenti. Non il feed.")
+      Text("i tuoi frammenti, non il feed.")
         .font(HaloType.serif(40, weight: .regular))
         .foregroundStyle(SwarmHalo.ink)
         .fixedSize(horizontal: false, vertical: true)
@@ -87,14 +64,48 @@ struct PlusUpsellView: View {
         .font(HaloType.ui(14, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
       HStack(spacing: SwarmHalo.s3) {
-        SwarmMetricTile(label: "mese", value: priceText, activation: .attention, active: true)
+        SwarmMetricTile(label: "mese", value: monthlyPriceValue, activation: .attention, active: true)
         Rectangle().fill(SwarmHalo.inkLine).frame(width: SwarmStroke.hairline, height: 28)
         SwarmMetricTile(label: "pubblico", value: "00", activation: .rest, active: false)
       }
       .padding(.vertical, SwarmHalo.s3)
+      actions
     }
     .padding(SwarmHalo.s4)
     .swarmSurface(.sheet, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .attention)
+  }
+
+  private var actions: some View {
+    HStack(spacing: SwarmHalo.s3) {
+      SwarmCommandButton(
+        label: isWorking ? "attivo..." : "attiva Halo Plus",
+        icon: "sparkles",
+        activation: .attention,
+        isProminent: true
+      ) {
+        Task { await purchase() }
+      }
+      .disabled(isWorking || isRestoring)
+      .opacity(isWorking ? 0.62 : 1)
+
+      SwarmCommandButton(
+        label: isRestoring ? "ripristino..." : "ripristina",
+        icon: "arrow.clockwise",
+        activation: .rest
+      ) {
+        Task { await restore() }
+      }
+      .disabled(isWorking || isRestoring)
+      .opacity(isRestoring ? 0.62 : 1)
+    }
+    .frame(maxWidth: .infinity, alignment: .trailing)
+  }
+
+  private var monthlyPriceValue: String {
+    let raw = priceText.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard raw.uppercased().hasPrefix("EUR ") else { return raw }
+    let amount = raw.dropFirst(4).replacingOccurrences(of: ".", with: ",")
+    return "\(amount)€"
   }
 
   private func feature(_ title: String, _ body: String, _ role: SwarmActivationRole) -> some View {
@@ -158,7 +169,7 @@ struct PlusUpsellView: View {
         errorMessage = "Nessun Halo Plus attivo da ripristinare."
       }
     } catch {
-      errorMessage = (error as? LocalizedError)?.errorDescription ?? "Restore non riuscito."
+      errorMessage = (error as? LocalizedError)?.errorDescription ?? "Ripristino non riuscito."
     }
   }
 }

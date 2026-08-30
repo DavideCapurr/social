@@ -214,16 +214,16 @@ struct ProfileView: View {
     let hasPlus = state.currentProfile?.hasPlus ?? false
     VStack(alignment: .leading, spacing: SwarmHalo.s3) {
       sectionHeader("memory")
-      Text(hasPlus ? "i frammenti del semestre restano privati finché non li riapri." : "i frammenti scaduti restano privati. Halo Plus li riapre senza metrica pubblica.")
+      Text(hasPlus ? "i frammenti del semestre restano privati finché non li riapri." : "Halo Plus riapre i Moment scaduti, solo per te.")
         .font(HaloType.ui(13, weight: .regular))
         .foregroundStyle(SwarmHalo.inkSecondary)
       HStack {
         SwarmMetricTile(label: "frammenti", value: twoDigits(memoryCount), activation: hasPlus ? .attention : .rest, active: memoryCount > 0 && hasPlus)
         Spacer()
-        SwarmCommandButton(label: "Memory", icon: "archivebox", activation: .attention) {
+        SwarmCommandButton(label: "apri Memory", icon: "archivebox", activation: .attention) {
           showMemory = true
         }
-        SwarmCommandButton(label: "Halo Plus", icon: "sparkles", activation: .attention) {
+        SwarmCommandButton(label: "attiva Plus", icon: "sparkles", activation: .attention) {
           showPlus = true
         }
       }
