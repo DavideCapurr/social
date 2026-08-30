@@ -29,7 +29,7 @@ struct HaloSpacePeekSheet: View {
         vibeChip
         ForEach(posts) { post in
           postCard(post)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, HaloVisual.HaloSpace.peekHorizontalPadding)
             .padding(.bottom, 12)
         }
       }
@@ -55,16 +55,16 @@ struct HaloSpacePeekSheet: View {
               center: .center, startRadius: 0, endRadius: 50
             )
           )
-          .frame(width: 88, height: 88)
+          .frame(width: HaloVisual.HaloSpace.peekAvatarAuraSize, height: HaloVisual.HaloSpace.peekAvatarAuraSize)
         Circle()
           .fill(person.tier.swarmHaloState.ringFill)
-          .frame(width: 68, height: 68)
+          .frame(width: HaloVisual.HaloSpace.peekAvatarRingSize, height: HaloVisual.HaloSpace.peekAvatarRingSize)
           .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 0.8))
           .shadow(color: person.tier.swarmHaloState.glow, radius: 9)
-        PortraitView(personId: person.id, size: 62, grayscale: true)
+        PortraitView(personId: person.id, size: HaloVisual.HaloSpace.peekPortraitSize, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
       }
-      .frame(width: 68, height: 68)
+      .frame(width: HaloVisual.HaloSpace.peekAvatarRingSize, height: HaloVisual.HaloSpace.peekAvatarRingSize)
 
       VStack(alignment: .leading, spacing: 1) {
         Text(person.name)
@@ -76,7 +76,7 @@ struct HaloSpacePeekSheet: View {
       }
       Spacer(minLength: 0)
     }
-    .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 16)
+    .padding(.horizontal, HaloVisual.HaloSpace.peekHorizontalPadding).padding(.top, 20).padding(.bottom, 16)
   }
 
   private var vibeChip: some View {
@@ -98,8 +98,8 @@ struct HaloSpacePeekSheet: View {
       Spacer(minLength: 0)
     }
     .padding(.horizontal, 14).padding(.vertical, 10)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
-    .padding(.horizontal, 20).padding(.bottom, 16)
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius))
+    .padding(.horizontal, HaloVisual.HaloSpace.peekHorizontalPadding).padding(.bottom, 16)
   }
 
   // MARK: posts
@@ -113,8 +113,8 @@ struct HaloSpacePeekSheet: View {
       }
       reactionsRow(for: post)
     }
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
-    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.cardRadius))
+    .clipShape(RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.cardRadius))
   }
 
   private func photoBody(_ post: DemoPost) -> some View {
@@ -143,22 +143,22 @@ struct HaloSpacePeekSheet: View {
       }
       .frame(height: 160)
 
-      Text("foto · \(post.ago)")
-        .font(HaloType.mono(10, weight: .medium))
-        .kerning(1.0)
-        .foregroundStyle(HaloInk.creamLow)
-        .padding(.leading, 10).padding(.bottom, 8)
-    }
-    .overlay(alignment: .bottom) {
-      if !post.caption.isEmpty {
-        Text(post.caption)
-          .font(HaloType.serif(15, weight: .regular))
-          .foregroundStyle(HaloInk.cream)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.horizontal, 16).padding(.vertical, 10)
-          .background(SwarmHalo.absoluteBlack.opacity(0.0))
-          .offset(y: 50)
+      VStack(alignment: .leading, spacing: 6) {
+        Text("foto · \(post.ago)")
+          .font(HaloType.mono(10, weight: .medium))
+          .kerning(1.0)
+          .foregroundStyle(HaloInk.creamLow)
+        if !post.caption.isEmpty {
+          Text(post.caption)
+            .font(HaloType.serif(15, weight: .regular))
+            .foregroundStyle(HaloInk.cream)
+            .lineLimit(2)
+        }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 10)
+      .background(SwarmHalo.absoluteBlack.opacity(0.42))
     }
   }
 
@@ -224,7 +224,7 @@ struct HaloSpacePeekSheet: View {
           )
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
-          .background(on ? SwarmHalo.ink.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+          .background(on ? SwarmHalo.ink.opacity(0.08) : Color.clear, in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius))
         }
         .buttonStyle(.plain)
       }

@@ -42,7 +42,7 @@ struct AudioRecorderView: View {
     }
     .padding(.vertical, 22)
     .frame(maxWidth: .infinity)
-    .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.cardRadius))
     .onDisappear { cleanup() }
   }
 

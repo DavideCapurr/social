@@ -40,7 +40,7 @@ struct ReactionBarView: View {
           .frame(maxWidth: .infinity)
           .padding(.vertical, 8)
           .haloGlass(
-            in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput),
+            in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius),
             tint: on ? MoodPalette.auraColor(accentMood, l: 0.55) : nil,
             interactive: true,
             stroke: on ? HaloTheme.glassStroke : .clear

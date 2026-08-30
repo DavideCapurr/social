@@ -58,10 +58,10 @@ struct PostCardView: View {
       )
     }
     .haloContentGlass(
-      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard),
+      in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.cardRadius),
       stroke: isExpiringSoon ? SwarmHalo.attention.opacity(0.86) : HaloTheme.glassStrokeSoft
     )
-    .clipShape(RoundedRectangle(cornerRadius: SwarmHalo.radiusCard))
+    .clipShape(RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.cardRadius))
   }
 
   // MARK: - header (decay ring + age + mood tag)

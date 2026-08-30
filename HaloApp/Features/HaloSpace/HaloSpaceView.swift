@@ -57,7 +57,7 @@ struct HaloSpaceView: View {
         Image(systemName: "xmark")
           .font(HaloType.system(14, weight: .semibold))
           .foregroundStyle(SwarmHalo.inkSecondary)
-          .frame(width: 32, height: 32)
+          .frame(width: HaloVisual.HaloSpace.topButtonSize, height: HaloVisual.HaloSpace.topButtonSize)
           .background(SwarmHalo.inkWhisper, in: Circle())
       }
       .buttonStyle(.plain)
@@ -83,7 +83,7 @@ struct HaloSpaceView: View {
           Image(systemName: "person.badge.plus")
             .font(HaloType.system(13, weight: .semibold))
             .foregroundStyle(SwarmActivationRole.connected.color)
-            .frame(width: 32, height: 32)
+            .frame(width: HaloVisual.HaloSpace.topButtonSize, height: HaloVisual.HaloSpace.topButtonSize)
             .background(SwarmActivationRole.connected.color.opacity(0.12), in: Circle())
             .overlay(Circle().strokeBorder(SwarmActivationRole.connected.stroke, lineWidth: 0.6))
         }
@@ -96,7 +96,7 @@ struct HaloSpaceView: View {
           Image(systemName: "exclamationmark.triangle")
             .font(HaloType.system(13, weight: .semibold))
             .foregroundStyle(SwarmHalo.attention)
-            .frame(width: 32, height: 32)
+            .frame(width: HaloVisual.HaloSpace.topButtonSize, height: HaloVisual.HaloSpace.topButtonSize)
             .background(SwarmHalo.attention.opacity(0.12), in: Circle())
             .overlay(Circle().strokeBorder(SwarmHalo.attention.opacity(0.32), lineWidth: 0.6))
         }
@@ -104,7 +104,7 @@ struct HaloSpaceView: View {
         .accessibilityLabel("Segnala \(current.name)")
       }
     }
-    .padding(.horizontal, 18).padding(.vertical, 12)
+    .padding(.horizontal, HaloVisual.HaloSpace.horizontalPadding).padding(.vertical, 12)
   }
 }
 
@@ -123,7 +123,7 @@ private struct HaloSpacePage: View {
         header
         spaceLedger
         if isLoading {
-          ProgressView().tint(SwarmHalo.ink).padding(40).frame(maxWidth: .infinity)
+          SwarmLoadingState(label: "carico HaloSpace")
         } else if let lastError {
           errorState(lastError)
         } else if posts.isEmpty {
@@ -139,7 +139,7 @@ private struct HaloSpacePage: View {
           }
         }
       }
-      .padding(.horizontal, 16)
+      .padding(.horizontal, HaloVisual.HaloSpace.pageHorizontalPadding)
       .padding(.bottom, 40)
     }
     .task(id: person.id) {
@@ -159,16 +159,16 @@ private struct HaloSpacePage: View {
               center: .center, startRadius: 0, endRadius: 70
             )
           )
-          .frame(width: 130, height: 130)
+          .frame(width: HaloVisual.HaloSpace.heroAuraSize, height: HaloVisual.HaloSpace.heroAuraSize)
         Circle()
           .fill(person.tier.swarmHaloState.ringFill)
-          .frame(width: 96, height: 96)
+          .frame(width: HaloVisual.HaloSpace.heroRingSize, height: HaloVisual.HaloSpace.heroRingSize)
           .overlay(Circle().strokeBorder(person.tier.swarmHaloState.stroke, lineWidth: 1))
           .shadow(color: person.tier.swarmHaloState.glow, radius: 12)
-        PortraitView(personId: person.id, size: 88, grayscale: true)
+        PortraitView(personId: person.id, size: HaloVisual.HaloSpace.heroPortraitSize, grayscale: true)
           .background(HaloTheme.portraitBacking, in: Circle())
       }
-      .frame(width: 130, height: 130)
+      .frame(width: HaloVisual.HaloSpace.heroAuraSize, height: HaloVisual.HaloSpace.heroAuraSize)
 
       VStack(spacing: 7) {
         Text(person.name.lowercased())
@@ -231,11 +231,11 @@ private struct HaloSpacePage: View {
     }
     .padding(.vertical, 12)
     .background(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
-        .fill(.ultraThinMaterial)
+      RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.panelRadius, style: .continuous)
+        .fill(SwarmHalo.inkWhisper)
     )
     .overlay(
-      RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous)
+      RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.panelRadius, style: .continuous)
         .strokeBorder(HaloInk.creamHair, lineWidth: 0.6)
     )
   }
@@ -278,7 +278,7 @@ private struct HaloSpacePage: View {
   private var emptyState: some View {
     SwarmEmptyState(
       title: "ancora silenzio.",
-      message: "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. puoi essere tu a farti sentire.",
+      message: "\(person.name.lowercased()) non ha Moment attivi nelle ultime 72h. Puoi essere tu a farti sentire.",
       activation: .connected,
       actionTitle: "invitalo più vicino",
       actionIcon: "person.badge.plus",
@@ -293,6 +293,12 @@ private struct HaloSpacePage: View {
     isLoading = true
     lastError = nil
     defer { isLoading = false }
+
+    if DemoMode.isActive {
+      posts = demoPosts(for: person)
+      return
+    }
+
     guard let userUUID = UUID(uuidString: person.id) else {
       posts = []
       return
@@ -314,6 +320,34 @@ private struct HaloSpacePage: View {
       message: message,
       activation: .attention
     )
+  }
+
+  private func demoPosts(for person: HaloPersonNode) -> [HaloPost] {
+    guard let createdAt = person.lastPostAt else { return [] }
+    let caption = person.lastPostCaption ?? person.note
+    return [
+      HaloPost(
+        id: stableDemoUUID(person.id, salt: "post"),
+        userId: stableDemoUUID(person.id, salt: "user"),
+        kind: person.lastPostKind ?? .text,
+        mediaPath: person.lastPostMediaPath,
+        caption: caption.isEmpty ? nil : caption,
+        mood: person.mood,
+        minTier: person.tier,
+        createdAt: createdAt,
+        expiresAt: person.lastPostExpiresAt
+      )
+    ]
+  }
+
+  private func stableDemoUUID(_ value: String, salt: String) -> UUID {
+    var hash: UInt64 = 14_695_981_039_346_656_037
+    for byte in "\(salt)|\(value)".utf8 {
+      hash ^= UInt64(byte)
+      hash = hash &* 1_099_511_628_211
+    }
+    let suffix = String(format: "%012llx", hash & 0x0000_FFFF_FFFF_FFFF)
+    return UUID(uuidString: "00000000-0000-4000-8000-\(suffix)") ?? UUID()
   }
 }
 
@@ -342,8 +376,8 @@ struct ReportUserSheet: View {
             SwarmEmptyState(
               title: "segnale ricevuto.",
               message: blockAfterSubmit
-                ? "\(person.name) non sara piu nella tua orbita."
-                : "il report e stato inviato a Halo.",
+                ? "\(person.name) non sarà più nella tua orbita."
+                : "il report è stato inviato a Halo.",
               activation: .connected
             )
           } else {
@@ -358,7 +392,7 @@ struct ReportUserSheet: View {
                 .padding(.vertical, 10)
                 .swarmSurface(
                   .panel,
-                  in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+                  in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius, style: .continuous),
                   activation: .attention
                 )
             }
@@ -374,7 +408,7 @@ struct ReportUserSheet: View {
         .padding(.vertical, 18)
     }
     .background(haloSheetBackground())
-    .presentationDetents([.medium, .large])
+    .presentationDetents([.large])
     .presentationDragIndicator(.visible)
     .presentationCornerRadius(HaloTheme.sheetCornerRadius)
     .presentationBackground(.clear)
@@ -426,7 +460,7 @@ struct ReportUserSheet: View {
             .padding(.vertical, 11)
             .swarmSurface(
               .control,
-              in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+              in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius, style: .continuous),
               activation: item == reason ? .attention : .rest
             )
           }
@@ -449,7 +483,7 @@ struct ReportUserSheet: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .haloContentGlass(in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput))
+        .haloContentGlass(in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius))
       Text("\(details.count)/500")
         .font(HaloType.mono(10, weight: .medium))
         .foregroundStyle(HaloInk.creamMute)
@@ -462,7 +496,7 @@ struct ReportUserSheet: View {
         Text("blocca e rimuovi")
           .font(HaloType.ui(14, weight: .semibold))
           .foregroundStyle(HaloInk.cream)
-        Text("non comparira piu nella tua orbita.")
+        Text("non comparirà più nella tua orbita.")
           .font(HaloType.ui(12, weight: .regular))
           .foregroundStyle(HaloInk.creamMute)
       }
@@ -473,7 +507,7 @@ struct ReportUserSheet: View {
     .padding(.vertical, 12)
     .swarmSurface(
       .panel,
-      in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous),
+      in: RoundedRectangle(cornerRadius: HaloVisual.HaloSpace.fieldRadius, style: .continuous),
       activation: blockAfterSubmit ? .attention : .rest
     )
   }
@@ -525,8 +559,17 @@ struct ReportUserSheet: View {
   @MainActor
   private func submit() async {
     guard !isSubmitting else { return }
+
+    if DemoMode.isActive {
+      isSubmitting = true
+      errorMessage = nil
+      defer { isSubmitting = false }
+      didSubmit = true
+      return
+    }
+
     guard let userId = UUID(uuidString: person.id) else {
-      errorMessage = "Questo profilo non puo essere segnalato."
+      errorMessage = "Questo profilo non può essere segnalato."
       return
     }
 
