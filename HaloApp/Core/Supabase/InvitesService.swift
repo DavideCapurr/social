@@ -6,7 +6,9 @@ struct HaloInvite: Codable, Identifiable, Hashable {
   let id: UUID
   let token: String
   let inviterId: UUID
-  let inviteeId: UUID
+  /// `nil` per gli invite "con link" a chi non e ancora su Halo:
+  /// l'invitee si aggancia alla riga al momento dell'accettazione.
+  let inviteeId: UUID?
   let tier: FriendshipTier
   let message: String?
   let status: String
@@ -57,7 +59,7 @@ final class InvitesService {
 
   private struct InviteInsert: Encodable {
     let inviterId: UUID
-    let inviteeId: UUID
+    let inviteeId: UUID?
     let tier: FriendshipTier
     let message: String?
 
@@ -69,11 +71,14 @@ final class InvitesService {
   }
 
   private struct InviteAcceptUpdate: Encodable {
+    /// Valorizzato solo per il claim di un invite aperto.
+    var inviteeId: UUID? = nil
     let status: String = "accepted"
     let acceptedAt: Date = .now
 
     enum CodingKeys: String, CodingKey {
       case status
+      case inviteeId = "invitee_id"
       case acceptedAt = "accepted_at"
     }
   }
@@ -123,6 +128,53 @@ final class InvitesService {
     return saved
   }
 
+  /// Crea o recupera il link invito "aperto" per chi non e ancora su Halo:
+  /// nessun invitee alla creazione, chi apre il link si aggancia al claim
+  /// in `accept(token:)`. Riusa l'ultimo link pending ancora valido, cosi
+  /// lo stesso URL puo girare su piu chat senza creare una riga per tap.
+  @discardableResult
+  func openInviteLink() async throws -> HaloInvite {
+    guard let me = AuthService.shared.currentUserId() else {
+      throw InviteError.notAuthenticated
+    }
+
+    let mine: [HaloInvite] = try await client
+      .from("invites")
+      .select()
+      .eq("inviter_id", value: me)
+      .eq("status", value: "pending")
+      .order("created_at", ascending: false)
+      .limit(20)
+      .execute()
+      .value
+    if let existing = mine.first(where: { $0.inviteeId == nil && $0.isPending }) {
+      return existing
+    }
+
+    let row = InviteInsert(
+      inviterId: me,
+      inviteeId: nil,
+      tier: .inner,
+      message: nil
+    )
+
+    let saved: HaloInvite = try await client
+      .from("invites")
+      .insert(row)
+      .select()
+      .single()
+      .execute()
+      .value
+    Task {
+      await AnalyticsService.shared.track(
+        .inviteSent,
+        inviteId: saved.id,
+        tier: saved.tier
+      )
+    }
+    return saved
+  }
+
   func invite(token: String) async throws -> HaloInvite {
     let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
     let invite: HaloInvite = try await client
@@ -145,8 +197,14 @@ final class InvitesService {
       throw InviteError.notAuthenticated
     }
     let invite = try await invite(token: token)
-    guard invite.inviteeId == me else {
-      throw InviteError.invalidTarget
+    if let inviteeId = invite.inviteeId {
+      guard inviteeId == me else {
+        throw InviteError.invalidTarget
+      }
+    } else {
+      guard invite.inviterId != me else {
+        throw InviteError.invalidTarget
+      }
     }
     guard invite.expiresAt > .now else {
       throw InviteError.expired
@@ -155,18 +213,25 @@ final class InvitesService {
       throw InviteError.alreadyHandled
     }
 
-    try await FollowsService.shared.acceptProposedTier(on: invite.inviterId)
+    if invite.inviteeId == nil {
+      // Invite aperto: chi arriva dal link segue l'inviter e propone .inner,
+      // lo stesso movimento dello step Initial Inner Circle (la controparte
+      // conferma piu avanti). L'edge dell'inviter non si puo creare da qui.
+      try await FollowsService.shared.addInitialInnerCandidate(invite.inviterId)
+    } else {
+      try await FollowsService.shared.acceptProposedTier(on: invite.inviterId)
 
-    do {
-      _ = try await FollowsService.shared.follow(invite.inviterId)
-    } catch {
-      // Already following is acceptable; accepting the proposal above is the
-      // state change that confirms the formal Inner invite.
+      do {
+        _ = try await FollowsService.shared.follow(invite.inviterId)
+      } catch {
+        // Already following is acceptable; accepting the proposal above is the
+        // state change that confirms the formal Inner invite.
+      }
     }
 
     let updated: HaloInvite = try await client
       .from("invites")
-      .update(InviteAcceptUpdate())
+      .update(InviteAcceptUpdate(inviteeId: invite.inviteeId == nil ? me : nil))
       .eq("token", value: invite.token)
       .select()
       .single()

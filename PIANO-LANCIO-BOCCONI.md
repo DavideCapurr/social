@@ -75,9 +75,11 @@ dall'audit: il first-run deve spiegarsi da solo)*
       — oggi un utente nuovo incontra ~10 nomi propri nei primi minuti
       (Nebula, asteroidi, Pulse, Event Ring, HaloSpace, Memory…): il resto
       va scoperto dopo, in contesto (progressive disclosure)
-- [ ] **"Invita con link" nello step Initial Inner Circle** accanto alla
+- [x] **"Invita con link" nello step Initial Inner Circle** accanto alla
       ricerca per handle — per i primi utenti la ricerca è vuota;
-      `InvitesService` è già pronto (`InitialInnerCircleView.swift`)
+      `InvitesService` esteso con invite aperti (invitee al claim,
+      migration `20260712100000_open_invite_links.sql`) e riga
+      "invita con link" in `InitialInnerCircleView.swift`
 - [ ] **Test di comprensione con ~10 studenti** prima del lancio: schermata
       Orbit per 10 secondi (screenshot via `./scripts/demo-screens.sh`),
       domande "cosa fa l'app? cosa toccheresti ora?" — gate: 7/10 rispondono

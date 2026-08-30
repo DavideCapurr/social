@@ -15,6 +15,8 @@ struct InitialInnerCircleView: View {
   @State private var isSearching: Bool = false
   @State private var isWorking: Bool = false
   @State private var errorMessage: String?
+  @State private var inviteLink: HaloInvite?
+  @State private var isCreatingInvite: Bool = false
 
   private let maxInner = 5
 
@@ -24,6 +26,7 @@ struct InitialInnerCircleView: View {
       VStack(spacing: 18) {
         eyebrow
         searchField
+        inviteLinkRow
         pickedRow
         resultsList
         Spacer(minLength: 0)
@@ -77,6 +80,50 @@ struct InitialInnerCircleView: View {
     }
     .padding(.horizontal, 14).padding(.vertical, 12)
     .swarmSurface(.control, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusInput, style: .continuous), activation: .connected)
+  }
+
+  /// Per i primi utenti la ricerca e vuota: un link invito porta dentro
+  /// chi non e ancora su Halo (`InvitesService.openInviteLink`).
+  private var inviteLinkRow: some View {
+    HStack(spacing: 10) {
+      VStack(alignment: .leading, spacing: 2) {
+        Text("non trovi nessuno?")
+          .font(HaloType.ui(12, weight: .medium))
+          .foregroundStyle(HaloInk.cream)
+        Text(inviteLink == nil
+          ? "manda un link a chi non e ancora su Halo."
+          : "link pronto. scade tra 14 giorni.")
+          .font(HaloType.ui(11, weight: .regular))
+          .foregroundStyle(HaloInk.creamMute)
+      }
+      Spacer()
+      if let url = inviteLink?.deepLinkURL {
+        ShareLink(item: url) {
+          Label("condividi", systemImage: "square.and.arrow.up")
+            .font(HaloType.ui(12, weight: .semibold))
+            .foregroundStyle(HaloInk.cream)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .swarmSurface(.control, in: Capsule(), activation: .connected)
+        }
+      } else {
+        Button {
+          Task { await createInviteLink() }
+        } label: {
+          Text(isCreatingInvite ? "creo..." : "invita con link")
+            .font(HaloType.ui(12, weight: .semibold))
+            .foregroundStyle(SwarmHalo.background)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(SwarmActivationRole.connected.color, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(isCreatingInvite)
+      }
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .swarmSurface(.panel, in: RoundedRectangle(cornerRadius: SwarmHalo.radiusCard, style: .continuous), activation: .rest)
   }
 
   @ViewBuilder
@@ -205,6 +252,21 @@ struct InitialInnerCircleView: View {
     isSearching = true; defer { isSearching = false }
     if let found = try? await ProfilesService.shared.search(handle: q) {
       results = found
+    }
+  }
+
+  @MainActor
+  private func createInviteLink() async {
+    guard !isCreatingInvite else { return }
+    isCreatingInvite = true; defer { isCreatingInvite = false }
+    errorMessage = nil
+    do {
+      inviteLink = try await InvitesService.shared.openInviteLink()
+    } catch {
+      errorMessage = SupabaseErrorMessage.describe(
+        error,
+        fallback: "Non riesco a creare il link. Riprova."
+      )
     }
   }
 
